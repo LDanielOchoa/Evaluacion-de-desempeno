@@ -1,55 +1,20 @@
 {
   "pages": {
-    "/_not-found/page": [
-      "static/chunks/webpack-68f22649503f8e75.js",
-      "static/chunks/4bd1b696-d3bb752020c5520d.js",
-      "static/chunks/517-11c021c1b3c33a12.js",
-      "static/chunks/main-app-d2d298b2bd950ea3.js",
-      "static/chunks/app/_not-found/page-91f747c343fd2643.js"
-    ],
     "/layout": [
-      "static/chunks/webpack-68f22649503f8e75.js",
-      "static/chunks/4bd1b696-d3bb752020c5520d.js",
-      "static/chunks/517-11c021c1b3c33a12.js",
-      "static/chunks/main-app-d2d298b2bd950ea3.js",
-      "static/css/8763e0b53e1ba2ed.css",
-      "static/chunks/app/layout-5a9fcdabcbf4faef.js"
-    ],
-    "/api/validate-cedula/route": [
-      "static/chunks/webpack-68f22649503f8e75.js",
-      "static/chunks/4bd1b696-d3bb752020c5520d.js",
-      "static/chunks/517-11c021c1b3c33a12.js",
-      "static/chunks/main-app-d2d298b2bd950ea3.js",
-      "static/chunks/app/api/validate-cedula/route-c7a08889c771d31b.js"
-    ],
-    "/formulario/page": [
-      "static/chunks/webpack-68f22649503f8e75.js",
-      "static/chunks/4bd1b696-d3bb752020c5520d.js",
-      "static/chunks/517-11c021c1b3c33a12.js",
-      "static/chunks/main-app-d2d298b2bd950ea3.js",
-      "static/chunks/387-91fa98436f0c02de.js",
-      "static/chunks/200-c3fc17c4081fd27e.js",
-      "static/chunks/app/formulario/page-6f202293353aa9c8.js"
-    ],
-    "/login/page": [
-      "static/chunks/webpack-68f22649503f8e75.js",
-      "static/chunks/4bd1b696-d3bb752020c5520d.js",
-      "static/chunks/517-11c021c1b3c33a12.js",
-      "static/chunks/main-app-d2d298b2bd950ea3.js",
-      "static/chunks/387-91fa98436f0c02de.js",
-      "static/chunks/238-ffc805b9c3c39ef0.js",
-      "static/chunks/295-8150b409087c40bd.js",
-      "static/chunks/app/login/page-609ddeae5645536d.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
     ],
     "/page": [
-      "static/chunks/webpack-68f22649503f8e75.js",
-      "static/chunks/4bd1b696-d3bb752020c5520d.js",
-      "static/chunks/517-11c021c1b3c33a12.js",
-      "static/chunks/main-app-d2d298b2bd950ea3.js",
-      "static/chunks/387-91fa98436f0c02de.js",
-      "static/chunks/238-ffc805b9c3c39ef0.js",
-      "static/chunks/295-8150b409087c40bd.js",
-      "static/chunks/app/page-7dda75b30d9030cd.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
+    ],
+    "/formulario/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/formulario/page.js"
     ]
   }
 }

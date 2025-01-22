@@ -14,7 +14,6 @@ import {
   ChevronRight,
   Sparkles,
   X,
-  CheckCircle,
   Award,
   ThumbsUp,
   Frown,
@@ -282,7 +281,7 @@ export default function CorporateEvaluationForm() {
                 />
                 <Star
                   className={`w-8 h-8 sm:w-10 sm:h-10 transition-colors duration-200 ${
-                    rating >= value ? "text-yellow-400" : "text-gray-200"
+                    rating >= value ? "text-yellow-400" : "text-gray-600"
                   }`}
                   fill={rating >= value ? "currentColor" : "none"}
                   strokeWidth={1.5}
@@ -666,12 +665,13 @@ export default function CorporateEvaluationForm() {
                   </div>
                 </motion.div>
               )}
-
               {currentSection === 3 && (
                 <motion.div
                   key="acuerdos"
                   initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }} // Añadido animate
                   exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }} // Añadido transition
                   className="space-y-8"
                 >
                   <h2 className="text-2xl font-bold text-green-900 mb-8 flex items-center gap-3">
