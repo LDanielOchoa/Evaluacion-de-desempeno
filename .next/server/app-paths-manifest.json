@@ -1,4 +1,7 @@
 {
-  "/page": "app/page.js",
-  "/formulario/page": "app/formulario/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/validate-cedula/route": "app/api/validate-cedula/route.js",
+  "/formulario/page": "app/formulario/page.js",
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js"
 }
