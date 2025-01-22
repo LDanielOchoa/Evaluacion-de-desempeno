@@ -341,7 +341,7 @@ export default function LoginPage() {
               className="relative z-10 flex items-center justify-center h-full p-8 lg:p-12"
             >
               <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/rb_2392-FkzbhF41nRWoOPdGwPqUvfGLYbJpFC.png"
+                src="/icon-login.png"
                 alt="Performance Evaluation Illustration"
                 width={500}
                 height={500}
