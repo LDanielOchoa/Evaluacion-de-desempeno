@@ -270,8 +270,6 @@ export default function CorporateEvaluationForm() {
             {[1, 2, 3, 4].map((value) => (
               <motion.label
                 key={value}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
                 className="cursor-pointer relative group"
               >
                 <Input
@@ -525,24 +523,7 @@ export default function CorporateEvaluationForm() {
       {Array.from({ length: 20 }).map((_, i) => (
         <motion.div
           key={i}
-          className="absolute rounded-full mix-blend-multiply filter blur-xl opacity-30"
-          style={{
-            width: Math.random() * 400 + 200,
-            height: Math.random() * 400 + 200,
-            background: `radial-gradient(circle at center, ${i % 2 === 0 ? "#34d399" : "#10b981"}, transparent)`,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            x: [0, Math.random() * 100 - 50, 0],
-            y: [0, Math.random() * 100 - 50, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: Math.random() * 10 + 10,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-          }}
+          className="rounded-full filter blur-xl opacity-10"
         />
       ))}
     </div>
@@ -690,9 +671,7 @@ export default function CorporateEvaluationForm() {
                 <motion.div
                   key="acuerdos"
                   initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
                   className="space-y-8"
                 >
                   <h2 className="text-2xl font-bold text-green-900 mb-8 flex items-center gap-3">
@@ -740,7 +719,6 @@ export default function CorporateEvaluationForm() {
                   <motion.div
                     className="w-5 h-5 sm:w-6 sm:h-6 border-3 border-white border-t-transparent rounded-full"
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
                   />
                 ) : (
                   <>

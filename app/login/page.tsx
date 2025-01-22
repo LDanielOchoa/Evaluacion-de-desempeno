@@ -1,5 +1,3 @@
-"use client"
-
 import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -18,6 +16,7 @@ export default function LoginPage() {
   const [cedula, setCedula] = useState("")
   const [isHovered, setIsHovered] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +28,7 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
-      const response = await fetch("https://evaluacion-de-desempeno.onrender.com/validate_cedula", {
+      const response = await fetch("http://localhost:5000/validate_cedula", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -101,17 +100,7 @@ export default function LoginPage() {
     },
   }
 
-  const generateCircles = (
-    count: number,
-  ): {
-    id: number
-    size: number
-    initialX: number
-    initialY: number
-    duration: number
-    delay: number
-    color: string
-  }[] => {
+  const generateCircles = (count: number) => {
     return Array.from({ length: count }, (_, i) => ({
       id: i,
       size: Math.random() * (200 - 80) + 80,
@@ -124,6 +113,12 @@ export default function LoginPage() {
   }
 
   const circles = generateCircles(30)
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setCedula(value)
+    setIsAnimating(value.toLowerCase() === "use client")
+  }
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-green-100 to-green-200 p-4 md:p-8 flex items-center justify-center relative overflow-hidden">
@@ -138,12 +133,18 @@ export default function LoginPage() {
             top: `${circle.initialY}%`,
             backgroundColor: circle.color,
           }}
-          animate={{
+          initial={{
+            x: 0,
+            y: 0,
+            scale: 1,
+            opacity: 0.4,
+          }}
+          animate={isAnimating ? {
             x: [0, Math.random() * 200 - 100, 0],
             y: [0, Math.random() * 200 - 100, 0],
             scale: [1, 1.1, 1],
             opacity: [0.4, 0.6, 0.4],
-          }}
+          } : {}}
           transition={{
             duration: circle.duration,
             repeat: Number.POSITIVE_INFINITY,
@@ -155,20 +156,30 @@ export default function LoginPage() {
 
       <motion.div
         className="absolute top-0 left-0 w-[1000px] h-[1000px] rounded-full bg-green-300/10 filter blur-3xl"
-        animate={{
+        initial={{
+          x: -300,
+          y: -300,
+          scale: 1,
+        }}
+        animate={isAnimating ? {
           x: [-300, 0, -300],
           y: [-300, 0, -300],
           scale: [1, 1.2, 1],
-        }}
+        } : {}}
         transition={{ duration: 15, repeat: Number.POSITIVE_INFINITY }}
       />
       <motion.div
         className="absolute bottom-0 right-0 w-[800px] h-[800px] rounded-full bg-green-400/10 filter blur-3xl"
-        animate={{
+        initial={{
+          x: 300,
+          y: 300,
+          scale: 1.2,
+        }}
+        animate={isAnimating ? {
           x: [300, 0, 300],
           y: [300, 0, 300],
           scale: [1.2, 1, 1.2],
-        }}
+        } : {}}
         transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY }}
       />
 
@@ -210,7 +221,7 @@ export default function LoginPage() {
                       type="text"
                       placeholder="Ingrese su cédula"
                       value={cedula}
-                      onChange={(e) => setCedula(e.target.value)}
+                      onChange={handleInputChange}
                       className="h-12 md:h-14 pl-12 rounded-2xl border-2 border-green-200 bg-white/60 backdrop-blur-sm focus:bg-white/80 focus:border-green-400 transition-all duration-300 relative z-10"
                     />
                   </motion.div>
@@ -322,13 +333,13 @@ export default function LoginPage() {
                   "radial-gradient(circle at 50% 50%, rgba(74, 222, 128, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%)",
                 borderRadius: "50% 50% 50% 50% / 50% 50% 50% 50%",
               }}
-              animate={{
+              animate={isAnimating ? {
                 borderRadius: [
                   "50% 50% 50% 50% / 50% 50% 50% 50%",
                   "60% 40% 40% 60% / 60% 60% 40% 40%",
                   "50% 50% 50% 50% / 50% 50% 50% 50%",
                 ],
-              }}
+              } : {}}
               transition={{
                 duration: 8,
                 repeat: Number.POSITIVE_INFINITY,
@@ -337,7 +348,7 @@ export default function LoginPage() {
             />
             <motion.div
               variants={floatingVariants}
-              animate="animate"
+              animate={isAnimating ? "animate" : ""}
               className="relative z-10 flex items-center justify-center h-full p-8 lg:p-12"
             >
               <Image
