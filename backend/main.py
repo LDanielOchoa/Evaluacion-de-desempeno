@@ -10,7 +10,7 @@ from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://evaluacion-sand.vercel.app/"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Parsear la URL de la base de datos
 db_url = urlparse(os.getenv('URL_ENV_RAILWAY'))
