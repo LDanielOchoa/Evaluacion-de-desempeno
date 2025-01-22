@@ -226,7 +226,7 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"Error al crear las tablas: {str(e)}")
     
-    app.run(debug=True)
+    port = int(os.getenv('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
 
 print("Servidor backend en ejecución. Accede a la API en http://localhost:5000")
-
