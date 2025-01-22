@@ -163,7 +163,7 @@ export default function CorporateEvaluationForm() {
 
   const fetchEvaluationHistory = async (cedula: string) => {
     try {
-      const response = await fetch("http://localhost:5000/get_evaluation_history", {
+      const response = await fetch("https://evaluacion-de-desempeno.onrender.com/get_evaluation_history", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -188,7 +188,7 @@ export default function CorporateEvaluationForm() {
       if (currentSection === sections.length - 1) {
         setIsLoading(true)
         try {
-          const response = await fetch("http://localhost:5000/submit_evaluation", {
+          const response = await fetch("https://evaluacion-de-desempeno.onrender.com/submit_evaluation", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

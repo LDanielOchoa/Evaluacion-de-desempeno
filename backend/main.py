@@ -10,7 +10,7 @@ from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/*": {"origins": "https://evaluacion-sand.vercel.app/"}})
 
 # Parsear la URL de la base de datos
 db_url = urlparse(os.getenv('URL_ENV_RAILWAY'))
@@ -229,4 +229,4 @@ if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
 
-print("Servidor backend en ejecución. Accede a la API en http://localhost:5000")
+print("Servidor backend en ejecución. Accede a la API en https://evaluacion-de-desempeno.onrender.com")

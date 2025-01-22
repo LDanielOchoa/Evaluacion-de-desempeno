@@ -4,7 +4,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
 
-    const response = await fetch("http://localhost:5000/validate_cedula", {
+    const response = await fetch("https://evaluacion-de-desempeno.onrender.com/validate_cedula", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
