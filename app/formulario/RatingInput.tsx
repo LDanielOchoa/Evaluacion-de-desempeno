@@ -1,4 +1,3 @@
-import type React from "react"
 import { motion } from "framer-motion"
 import { Star } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -12,7 +11,7 @@ interface RatingInputProps {
   updateFormData: (section: string, field: string, value: number) => void
 }
 
-export const RatingInput: React.FC<RatingInputProps> = ({ name, label, section, value, updateFormData }) => {
+export const RatingInput: React.FC<RatingInputProps> = ({ name, label, section, value: rating, updateFormData }) => {
   return (
     <motion.div
       variants={{
@@ -37,9 +36,9 @@ export const RatingInput: React.FC<RatingInputProps> = ({ name, label, section, 
           </span>
         </div>
         <div className="flex gap-1 sm:gap-2 md:gap-4">
-          {[1, 2, 3, 4].map((value) => (
+          {[1, 2, 3, 4].map((starValue) => (
             <motion.label
-              key={value}
+              key={starValue}
               className="cursor-pointer relative group"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
@@ -47,22 +46,22 @@ export const RatingInput: React.FC<RatingInputProps> = ({ name, label, section, 
               <Input
                 type="radio"
                 name={name}
-                value={value}
+                value={starValue}
                 className="sr-only"
-                onChange={() => updateFormData(section, name, value)}
-                checked={value === value}
+                onChange={() => updateFormData(section, name, starValue)}
+                checked={rating === starValue}
               />
               <Star
                 className={`w-8 h-8 sm:w-10 sm:h-10 transition-colors duration-200 ${
-                  value >= value
-                    ? value >= 3
+                  rating >= starValue
+                    ? starValue >= 3
                       ? "text-green-500"
-                      : value === 2
+                      : starValue === 2
                         ? "text-yellow-500"
                         : "text-red-500"
                     : "text-gray-300"
                 }`}
-                fill={value >= value ? "currentColor" : "none"}
+                fill={rating >= starValue ? "currentColor" : "none"}
                 strokeWidth={1.5}
               />
               <motion.div
@@ -71,7 +70,7 @@ export const RatingInput: React.FC<RatingInputProps> = ({ name, label, section, 
                 animate={{ y: 0, opacity: 1 }}
               >
                 <span className="text-xs font-medium text-green-700 whitespace-nowrap bg-white/80 px-2 py-1 rounded-full shadow-sm">
-                  {value}
+                  {starValue}
                 </span>
               </motion.div>
             </motion.label>
