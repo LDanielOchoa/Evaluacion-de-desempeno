@@ -175,7 +175,7 @@ export default function FormularioContent() {
 
   const fetchEvaluationHistory = useCallback(async (cedula: string) => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/get_evaluation_history", {
+      const response = await fetch("https://evaluacion-de-desempeno.onrender.com/get_evaluation_history", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -223,7 +223,7 @@ export default function FormularioContent() {
 
         setIsLoading(true)
         try {
-          const response = await fetch("http://127.0.0.1:5000/submit_evaluation", {
+          const response = await fetch("https://evaluacion-de-desempeno.onrender.com/submit_evaluation", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
