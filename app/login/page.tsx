@@ -1,40 +1,61 @@
-"use client";
+"use client"
 
 import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
-import { ArrowRight, LockKeyhole } from "lucide-react"
+import { ArrowRight, LockKeyhole, User, Shield, ChevronRight, Info } from "lucide-react"
 import Image from "next/image"
 import { toast } from "react-hot-toast"
 import { NotFoundModal } from "@/components/NotFoundModal"
 import { useUser } from "../contexts/userContexts"
+import { ErrorMessage } from "@/components/ErrorMessage"
+import { SecurityModal } from "@/components/SecurityModal"
+import { ForgotPasswordModal } from "../../components/Security-Login/forgot-password-modal"
 
 export default function LoginPage() {
   const router = useRouter()
   const { setUserData } = useUser()
   const [isLoading, setIsLoading] = useState(false)
-  const [cedula, setCedula] = useState("")
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
   const [isHovered, setIsHovered] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [showSecurityModal, setShowSecurityModal] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [tempUserData, setTempUserData] = useState<{
+    CEDULA: number
+    NOMBRE: string
+    CARGO: string
+    CENTRO_DE_COSTO: string
+    LIDER_EVALUADOR: string
+    CARGO_DE_LIDER_EVALUADOR: string
+    ESTADO: string
+    ANO_INGRESO: number
+    MES_INGRESO: number
+    ANOS: number
+    ANTIGUEDAD: number
+  } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setErrorMessage("")
 
-    if (!cedula) {
-      toast.error("Por favor ingrese su cédula")
+    if (!username || !password) {
+      setErrorMessage("Por favor ingrese su usuario y contraseña")
       return
     }
 
     setIsLoading(true)
     try {
-      const response = await fetch("https://evaluacion-de-desempeno.onrender.com/validate_cedula", {
+      const response = await fetch("https://evaluacion-de-desempeno.onrender.com/validate_user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ cedula: cedula.trim() }),
+        body: JSON.stringify({ username, password }),
       })
 
       const data = await response.json()
@@ -44,8 +65,8 @@ export default function LoginPage() {
       }
 
       if (data.valid) {
-        setUserData({
-          CEDULA: Number.parseInt(cedula),
+        const userData = {
+          CEDULA: Number.parseInt(username),
           NOMBRE: data.nombre,
           CARGO: data.cargo,
           CENTRO_DE_COSTO: data.centro_de_costo,
@@ -56,15 +77,28 @@ export default function LoginPage() {
           MES_INGRESO: data.mes_ingreso,
           ANOS: data.anos,
           ANTIGUEDAD: data.antiguedad,
-        })
-        toast.success(`Bienvenido, ${data.nombre}`)
-        router.push("/formulario")
+        }
+
+        if (data.requiresSecurityUpdate) {
+          setTempUserData(userData)
+          setShowSecurityModal(true)
+        } else {
+          setUserData(userData)
+          toast.success(`Bienvenido, ${data.nombre}`)
+
+          // Check if the user is a director or coordinator
+          if (userData.CARGO.startsWith("DIRECTOR") || userData.CARGO.startsWith("COORDINADOR")) {
+            router.push("/post-login")
+          } else {
+            router.push("/formulario")
+          }
+        }
       } else {
-        setIsModalOpen(true)
+        setErrorMessage("Usuario o contraseña incorrectos")
       }
     } catch (error: any) {
       console.error("Error:", error)
-      toast.error(error.message || "Error al validar la cédula")
+      setErrorMessage(error.message || "Error al validar el usuario")
     } finally {
       setIsLoading(false)
     }
@@ -117,7 +151,11 @@ export default function LoginPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    setCedula(value)
+    if (e.target.name === "username") {
+      setUsername(value)
+    } else if (e.target.name === "password") {
+      setPassword(value)
+    }
     setIsAnimating(value.toLowerCase() === "use client")
   }
 
@@ -140,12 +178,12 @@ export default function LoginPage() {
             scale: 1,
             opacity: 0.4,
           }}
-          animate={isAnimating ? {
-            x: [0, Math.random() * 200 - 100, 0],
-            y: [0, Math.random() * 200 - 100, 0],
+          animate={{
+            x: [0, Math.random() * 50 - 25, 0],
+            y: [0, Math.random() * 50 - 25, 0],
             scale: [1, 1.1, 1],
             opacity: [0.4, 0.6, 0.4],
-          } : {}}
+          }}
           transition={{
             duration: circle.duration,
             repeat: Number.POSITIVE_INFINITY,
@@ -162,11 +200,11 @@ export default function LoginPage() {
           y: -300,
           scale: 1,
         }}
-        animate={isAnimating ? {
+        animate={{
           x: [-300, 0, -300],
           y: [-300, 0, -300],
           scale: [1, 1.2, 1],
-        } : {}}
+        }}
         transition={{ duration: 15, repeat: Number.POSITIVE_INFINITY }}
       />
       <motion.div
@@ -176,11 +214,11 @@ export default function LoginPage() {
           y: 300,
           scale: 1.2,
         }}
-        animate={isAnimating ? {
+        animate={{
           x: [300, 0, 300],
           y: [300, 0, 300],
           scale: [1.2, 1, 1.2],
-        } : {}}
+        }}
         transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY }}
       />
 
@@ -204,29 +242,75 @@ export default function LoginPage() {
                 }}
                 transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY }}
               />
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-500 to-green-700 bg-clip-text text-transparent mb-2 md:mb-4 relative z-10">
-                Evaluación de Desempeño
-              </h1>
-              <p className="text-black text-lg md:text-xl relative z-10">
-                Ingrese sus credenciales para acceder al sistema
-              </p>
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="flex items-center justify-center lg:justify-start mb-4"
+              >
+                <Image
+                  src="/sao6.png"
+                  alt="Company Logo"
+                  width={60}
+                  height={60}
+                  className="mr-4"
+                />
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-500 to-green-700 bg-clip-text text-transparent">
+                  Compromisos constructivos 2024
+                </h1>
+              </motion.div>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="text-black text-lg md:text-xl relative z-10"
+              >
+                Ingrese su usuario y contraseña para comenzar
+              </motion.p>
             </motion.div>
-
+            <ErrorMessage message={errorMessage} />
             <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto lg:mx-0">
               <motion.div variants={itemVariants} className="space-y-4">
                 <div className="relative group">
                   <motion.div whileHover={{ scale: 1.02 }} className="relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-green-300/20 to-green-500/20 rounded-2xl blur" />
-                    <LockKeyhole className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-black" />
+                    <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-black" />
                     <Input
                       type="text"
-                      placeholder="Ingrese su cédula"
-                      value={cedula}
+                      name="username"
+                      placeholder="Ingrese su usuario"
+                      value={username}
                       onChange={handleInputChange}
                       className="h-12 md:h-14 pl-12 rounded-2xl border-2 border-green-200 bg-white/60 backdrop-blur-sm focus:bg-white/80 focus:border-green-400 transition-all duration-300 relative z-10"
                     />
                   </motion.div>
                 </div>
+                <div className="relative group">
+                  <motion.div whileHover={{ scale: 1.02 }} className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-300/20 to-green-500/20 rounded-2xl blur" />
+                    <LockKeyhole className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-black" />
+                    <Input
+                      type="password"
+                      name="password"
+                      placeholder="Ingrese su contraseña"
+                      value={password}
+                      onChange={handleInputChange}
+                      className="h-12 md:h-14 pl-12 rounded-2xl border-2 border-green-200 bg-white/60 backdrop-blur-sm focus:bg-white/80 focus:border-green-400 transition-all duration-300 relative z-10"
+                    />
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="flex justify-between items-center">
+                <motion.button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-green-600 hover:text-green-700 transition-colors flex items-center"
+                  whileHover={{ x: 5 }}
+                >
+                  ¿Olvidaste tu contraseña?
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </motion.button>
               </motion.div>
 
               <motion.div
@@ -270,31 +354,10 @@ export default function LoginPage() {
                         className="absolute inset-0 flex items-center justify-center"
                       >
                         <motion.div
-                          className="w-16 h-16 relative"
+                          className="w-6 h-6 border-4 border-white border-t-transparent rounded-full"
                           animate={{ rotate: 360 }}
-                          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                        >
-                          {[...Array(4)].map((_, i) => (
-                            <motion.div
-                              key={i}
-                              className="absolute w-3 h-3 bg-white rounded-full"
-                              animate={{
-                                scale: [1, 0.5, 1],
-                                opacity: [1, 0.5, 1],
-                              }}
-                              transition={{
-                                duration: 1,
-                                repeat: Number.POSITIVE_INFINITY,
-                                delay: i * 0.2,
-                              }}
-                              style={{
-                                top: i === 0 ? 0 : i === 2 ? "100%" : "50%",
-                                left: i === 3 ? 0 : i === 1 ? "100%" : "50%",
-                                transform: "translate(-50%, -50%)",
-                              }}
-                            />
-                          ))}
-                        </motion.div>
+                          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                        />
                       </motion.div>
                     ) : (
                       <motion.div
@@ -334,13 +397,13 @@ export default function LoginPage() {
                   "radial-gradient(circle at 50% 50%, rgba(74, 222, 128, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%)",
                 borderRadius: "50% 50% 50% 50% / 50% 50% 50% 50%",
               }}
-              animate={isAnimating ? {
+              animate={{
                 borderRadius: [
                   "50% 50% 50% 50% / 50% 50% 50% 50%",
                   "60% 40% 40% 60% / 60% 60% 40% 40%",
                   "50% 50% 50% 50% / 50% 50% 50% 50%",
                 ],
-              } : {}}
+              }}
               transition={{
                 duration: 8,
                 repeat: Number.POSITIVE_INFINITY,
@@ -349,7 +412,7 @@ export default function LoginPage() {
             />
             <motion.div
               variants={floatingVariants}
-              animate={isAnimating ? "animate" : ""}
+              animate="animate"
               className="relative z-10 flex items-center justify-center h-full p-8 lg:p-12"
             >
               <Image
@@ -365,6 +428,18 @@ export default function LoginPage() {
         </div>
       </motion.div>
       <NotFoundModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <SecurityModal
+        isOpen={showSecurityModal}
+        onClose={() => setShowSecurityModal(false)}
+        userData={tempUserData}
+        onSecurityUpdate={(updatedData) => {
+          setUserData(updatedData)
+          toast.success("Seguridad actualizada con éxito")
+          router.push("/post-login")
+        }}
+      />
+      <ForgotPasswordModal isOpen={showForgotPassword} onClose={() => setShowForgotPassword(false)} />
     </div>
   )
 }
+
