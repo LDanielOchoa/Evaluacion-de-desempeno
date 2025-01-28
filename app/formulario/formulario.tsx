@@ -23,6 +23,11 @@ import {
 } from "lucide-react"
 import confetti from "canvas-confetti"
 import { useUser } from "../contexts/userContexts"
+import { RatingInput } from "./RatingInput"
+import { TextInput } from "./TextInput"
+import { TextAreaInput } from "./TextAreaInput"
+import { HistorySection } from "./HistorySection"
+import { AnimatedBackground } from "./AnimatedBackground"
 
 type FormData = {
   historial: {}
@@ -280,151 +285,6 @@ export default function FormularioContent() {
     return sum / values.length
   }, [formData.valores])
 
-  const RatingInput = React.memo(({ name, label, section }: { name: string; label: string; section: string }) => {
-    const rating = formData[section as keyof typeof formData][name as keyof (typeof formData)[typeof section]] as number
-    return (
-      <motion.div
-        variants={itemVariants}
-        initial="hidden"
-        animate="visible"
-        className="mb-8 bg-gradient-to-br from-green-50/80 to-green-100/50 backdrop-blur-sm rounded-2xl p-4 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/50"
-        whileHover={{ scale: 1.02 }}
-      >
-        <Label htmlFor={name} className="block text-lg sm:text-xl font-medium text-green-900 mb-4 sm:mb-6">
-          {label}
-        </Label>
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex items-center justify-between w-full sm:w-auto">
-            <span className="text-xs sm:text-sm font-medium text-green-800 bg-green-100/50 px-2 sm:px-3 py-1 rounded-full">
-              Malo
-            </span>
-            <span className="text-xs sm:text-sm font-medium text-green-800 bg-green-100/50 px-2 sm:px-3 py-1 rounded-full sm:hidden">
-              Bueno
-            </span>
-          </div>
-          <div className="flex gap-1 sm:gap-2 md:gap-4">
-            {[1, 2, 3, 4].map((value) => (
-              <motion.label
-                key={value}
-                className="cursor-pointer relative group"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Input
-                  type="radio"
-                  name={name}
-                  value={value}
-                  className="sr-only"
-                  onChange={() => updateFormData(section, name, value)}
-                  checked={rating === value}
-                />
-                <Star
-                  className={`w-8 h-8 sm:w-10 sm:h-10 transition-colors duration-200 ${
-                    rating >= value
-                      ? value >= 3
-                        ? "text-green-500"
-                        : value === 2
-                          ? "text-yellow-500"
-                          : "text-red-500"
-                      : "text-gray-300"
-                  }`}
-                  fill={rating >= value ? "currentColor" : "none"}
-                  strokeWidth={1.5}
-                />
-                <motion.div
-                  className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  initial={{ y: -10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                >
-                  <span className="text-xs font-medium text-green-700 whitespace-nowrap bg-white/80 px-2 py-1 rounded-full shadow-sm">
-                    {value}
-                  </span>
-                </motion.div>
-              </motion.label>
-            ))}
-          </div>
-          <span className="hidden sm:inline-block text-xs sm:text-sm font-medium text-green-800 bg-green-100/50 px-2 sm:px-3 py-1 rounded-full">
-            Bueno
-          </span>
-        </div>
-      </motion.div>
-    )
-  })
-
-  const TextInput = React.memo(
-    ({
-      id,
-      label,
-      required = false,
-      disabled = false,
-    }: {
-      id: string
-      label: string
-      required?: boolean
-      disabled?: boolean
-    }) => (
-      <motion.div
-        variants={itemVariants}
-        initial="hidden"
-        animate="visible"
-        className="mb-4"
-        whileHover={{ scale: 1.02 }}
-      >
-        <Label htmlFor={id} className="block text-sm font-medium text-green-800 mb-2">
-          {label} {required && <span className="text-red-500">*</span>}
-        </Label>
-        <Input
-          type="text"
-          id={id}
-          name={id}
-          required={required}
-          disabled={disabled}
-          className="w-full p-2 border-2 border-green-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200 bg-white/70 backdrop-blur-sm uppercase"
-          value={formData.datos[id as keyof typeof formData.datos]}
-          onChange={(e) => updateFormData("datos", id, e.target.value.toUpperCase())}
-        />
-      </motion.div>
-    ),
-  )
-
-  const TextAreaInput = React.memo(({ id, label }: { id: string; label: string }) => {
-    const [localValue, setLocalValue] = useState(formData.acuerdos[id as keyof typeof formData.acuerdos])
-
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setLocalValue(e.target.value)
-    }
-
-    const handleBlur = useCallback(() => {
-      updateFormData("acuerdos", id, localValue)
-    }, [updateFormData, id, localValue]) // Removed unnecessary dependencies
-
-    return (
-      <motion.div
-        layout
-        variants={itemVariants}
-        initial="hidden"
-        animate="visible"
-        className="bg-gradient-to-br from-white/60 to-white/30 backdrop-blur-sm rounded-2xl p-4 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/50"
-        whileHover={{ scale: 1.02 }}
-      >
-        <Label htmlFor={id} className="block text-xl font-medium text-green-800 mb-4">
-          {label}
-        </Label>
-        <Textarea
-          id={id}
-          name={id}
-          className="w-full p-4 border-2 border-green-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200 bg-white/70 backdrop-blur-sm resize-y"
-          value={localValue}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          required
-          rows={4}
-          placeholder="Escribe aquí..."
-        />
-      </motion.div>
-    )
-  })
-
   const HistorySection = React.memo(() => {
     const [currentPage, setCurrentPage] = useState(0)
     const [expandedCard, setExpandedCard] = useState<number | null>(null)
@@ -656,10 +516,10 @@ export default function FormularioContent() {
                   {index === 0
                     ? "Historial"
                     : index === 1
-                    ? "Datos Personales"
-                    : index === 2
-                    ? "Valores Corporativos"
-                    : "Acuerdos y Desarrollo"}
+                      ? "Datos Personales"
+                      : index === 2
+                        ? "Valores Corporativos"
+                        : "Acuerdos y Desarrollo"}
                 </div>
                 <div className="h-2 sm:h-3 bg-white/30 rounded-full overflow-hidden">
                   <motion.div
@@ -701,12 +561,54 @@ export default function FormularioContent() {
                     Datos Personales
                   </h2>
                   <div className="space-y-4">
-                    <TextInput id="nombres" label="Nombres y Apellidos colaborador" required disabled />
-                    <TextInput id="cedula" label="Cédula" required disabled />
-                    <TextInput id="cargo" label="Cargo" required disabled />
-                    <TextInput id="jefe" label="Nombre del jefe inmediato" required disabled />
-                    <TextInput id="cargoJefe" label="Cargo del jefe inmediato" required disabled />
-                    <TextInput id="area" label="Área a la que pertenece" required disabled />
+                    <TextInput
+                      id="nombres"
+                      label="Nombres y Apellidos colaborador"
+                      required={true}
+                      disabled={true}
+                      value={formData.datos.nombres}
+                      onChange={(e) => updateFormData("datos", "nombres", e.target.value)}
+                    />
+                    <TextInput
+                      id="cedula"
+                      label="Cédula"
+                      required={true}
+                      disabled={true}
+                      value={formData.datos.cedula}
+                      onChange={(e) => updateFormData("datos", "cedula", e.target.value)}
+                    />
+                    <TextInput
+                      id="cargo"
+                      label="Cargo"
+                      required={true}
+                      disabled={true}
+                      value={formData.datos.cargo}
+                      onChange={(e) => updateFormData("datos", "cargo", e.target.value)}
+                    />
+                    <TextInput
+                      id="jefe"
+                      label="Nombre del jefe inmediato"
+                      required={true}
+                      disabled={true}
+                      value={formData.datos.jefe}
+                      onChange={(e) => updateFormData("datos", "jefe", e.target.value)}
+                    />
+                    <TextInput
+                      id="cargoJefe"
+                      label="Cargo del jefe inmediato"
+                      required={true}
+                      disabled={true}
+                      value={formData.datos.cargoJefe}
+                      onChange={(e) => updateFormData("datos", "cargoJefe", e.target.value)}
+                    />
+                    <TextInput
+                      id="area"
+                      label="Área a la que pertenece"
+                      required={true}
+                      disabled={true}
+                      value={formData.datos.area}
+                      onChange={(e) => updateFormData("datos", "area", e.target.value)}
+                    />
                   </div>
                 </motion.div>
               )}
@@ -728,42 +630,64 @@ export default function FormularioContent() {
                       name="compromiso"
                       label="Compromiso: Pasión y entrega en lo que hago"
                       section="valores"
+                      value={formData.valores.compromiso}
+                      updateFormData={updateFormData}
                     />
                     <RatingInput
                       name="honestidad"
                       label="Honestidad: Hacer lo correcto sin necesidad de espectadores"
                       section="valores"
+                      value={formData.valores.honestidad}
+                      updateFormData={updateFormData}
                     />
                     <RatingInput
                       name="respeto"
                       label="Respeto: Reconocer y aceptar los derechos de los demás"
                       section="valores"
+                      value={formData.valores.respeto}
+                      updateFormData={updateFormData}
                     />
                     <RatingInput
                       name="sencillez"
                       label="Sencillez: Humildad y valorar todo por simple que parezca"
                       section="valores"
+                      value={formData.valores.sencillez}
+                      updateFormData={updateFormData}
                     />
-                    <RatingInput name="servicio" label="Servicio: Atención al cliente y compañeros" section="valores" />
+                    <RatingInput
+                      name="servicio"
+                      label="Servicio: Atención al cliente y compañeros"
+                      section="valores"
+                      value={formData.valores.servicio}
+                      updateFormData={updateFormData}
+                    />
                     <RatingInput
                       name="trabajo_equipo"
                       label="Trabajo en equipo: Colaboración y apoyo mutuo"
                       section="valores"
+                      value={formData.valores.trabajo_equipo}
+                      updateFormData={updateFormData}
                     />
                     <RatingInput
                       name="conocimiento_trabajo"
                       label="Conocimiento del trabajo: Experiencia y habilidades"
                       section="valores"
+                      value={formData.valores.conocimiento_trabajo}
+                      updateFormData={updateFormData}
                     />
                     <RatingInput
                       name="productividad"
                       label="Productividad: Eficiencia y resultados"
                       section="valores"
+                      value={formData.valores.productividad}
+                      updateFormData={updateFormData}
                     />
                     <RatingInput
                       name="cumple_sistema_gestion"
                       label="Cumplimiento del sistema de gestión: Normas y procedimientos"
                       section="valores"
+                      value={formData.valores.cumple_sistema_gestion}
+                      updateFormData={updateFormData}
                     />
                   </div>
                 </motion.div>
@@ -784,18 +708,30 @@ export default function FormularioContent() {
                   <TextAreaInput
                     id="colaborador_acuerdos"
                     label="Acuerdos para mejorar el desempeño por parte del colaborador:"
+                    section="acuerdos"
+                    value={formData.acuerdos.colaborador_acuerdos}
+                    updateFormData={updateFormData}
                   />
                   <TextAreaInput
                     id="jefe_acuerdos"
                     label="Acuerdos para mejorar el desempeño por parte del jefe inmediato:"
+                    section="acuerdos"
+                    value={formData.acuerdos.jefe_acuerdos}
+                    updateFormData={updateFormData}
                   />
                   <TextAreaInput
                     id="desarrollo_necesidades"
                     label="Necesidades de desarrollo del cargo (Formación, entrenamiento, mentoría, etc.):"
+                    section="acuerdos"
+                    value={formData.acuerdos.desarrollo_necesidades}
+                    updateFormData={updateFormData}
                   />
                   <TextAreaInput
                     id="aspectos_positivos"
                     label="Aspectos positivos a resaltar del colaborador por parte del jefe inmediato:"
+                    section="acuerdos"
+                    value={formData.acuerdos.aspectos_positivos}
+                    updateFormData={updateFormData}
                   />
                 </motion.div>
               )}
@@ -817,24 +753,23 @@ export default function FormularioContent() {
                 type="submit"
                 disabled={isLoading}
                 className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
-              >{isLoading ? (
-                <motion.div
-                  className="w-5 h-5 sm:w-6 sm:h-6 border-3 border-white border-t-transparent rounded-full"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                />
-              ) : (
-                <>
-                  <span>
-                    {currentSection === sections.length - 1 ? "Enviar" : "Siguiente"}
-                  </span>
-                  {currentSection === sections.length - 1 ? (
-                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                  )}
-                </>
-              )}              
+              >
+                {isLoading ? (
+                  <motion.div
+                    className="w-5 h-5 sm:w-6 sm:h-6 border-3 border-white border-t-transparent rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                  />
+                ) : (
+                  <>
+                    <span>{currentSection === sections.length - 1 ? "Enviar" : "Siguiente"}</span>
+                    {currentSection === sections.length - 1 ? (
+                      <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                    )}
+                  </>
+                )}
               </Button>
             </motion.div>
           </form>
@@ -886,8 +821,8 @@ export default function FormularioContent() {
                   {calculateOverallRating() >= 3
                     ? "¡Excelente trabajo! Tu compromiso con nuestros valores corporativos es ejemplar. Sigue así, eres un pilar fundamental para nuestro equipo."
                     : calculateOverallRating() >= 2
-                    ? "Buen trabajo. Has demostrado un sólido entendimiento de nuestros valores corporativos. Hay espacio para crecer, ¡y estamos aquí para apoyarte!"
-                    : "Gracias por completar la evaluación. Vemos oportunidades para mejorar en la alineación con nuestros valores corporativos. ¡Trabajemos juntos para tu desarrollo!"}
+                      ? "Buen trabajo. Has demostrado un sólido entendimiento de nuestros valores corporativos. Hay espacio para crecer, ¡y estamos aquí para apoyarte!"
+                      : "Gracias por completar la evaluación. Vemos oportunidades para mejorar en la alineación con nuestros valores corporativos. ¡Trabajemos juntos para tu desarrollo!"}
                 </motion.p>
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
                   <p className="text-sm text-gray-500 mb-4">
@@ -896,7 +831,7 @@ export default function FormularioContent() {
                   </p>
                   <Button
                     onClick={() => setShowSuccess(false)}
-                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full hover:shadow-lg transition-all duration-200"
+                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full hover-lg transition-all duration-200"
                   >
                     Entendido
                   </Button>

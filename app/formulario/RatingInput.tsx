@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { motion } from "framer-motion"
 import { Star } from "lucide-react"
@@ -10,23 +8,17 @@ interface RatingInputProps {
   name: string
   label: string
   section: string
-  rating: number
-  updateFormData: (section: string, field: string, value: number | string) => void
+  value: number
+  updateFormData: (section: string, field: string, value: number) => void
 }
 
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 100 },
-  },
-}
-
-export const RatingInput: React.FC<RatingInputProps> = ({ name, label, section, rating, updateFormData }) => {
+export const RatingInput: React.FC<RatingInputProps> = ({ name, label, section, value, updateFormData }) => {
   return (
     <motion.div
-      variants={itemVariants}
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
+      }}
       initial="hidden"
       animate="visible"
       className="mb-8 bg-gradient-to-br from-green-50/80 to-green-100/50 backdrop-blur-sm rounded-2xl p-4 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/50"
@@ -58,11 +50,11 @@ export const RatingInput: React.FC<RatingInputProps> = ({ name, label, section, 
                 value={value}
                 className="sr-only"
                 onChange={() => updateFormData(section, name, value)}
-                checked={rating === value}
+                checked={value === value}
               />
               <Star
                 className={`w-8 h-8 sm:w-10 sm:h-10 transition-colors duration-200 ${
-                  rating >= value
+                  value >= value
                     ? value >= 3
                       ? "text-green-500"
                       : value === 2
@@ -70,7 +62,7 @@ export const RatingInput: React.FC<RatingInputProps> = ({ name, label, section, 
                         : "text-red-500"
                     : "text-gray-300"
                 }`}
-                fill={rating >= value ? "currentColor" : "none"}
+                fill={value >= value ? "currentColor" : "none"}
                 strokeWidth={1.5}
               />
               <motion.div

@@ -1,25 +1,35 @@
-"use client"
-
 import type React from "react"
 import { useState, useCallback, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Sparkles, Calendar, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
+import { Calendar, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Sparkles } from "lucide-react"
+
+interface EvaluationHistory {
+  fecha_evaluacion: string
+  anio: number
+  cargo: string
+  compromiso: number
+  honestidad: number
+  respeto: number
+  sencillez: number
+  servicio: number
+  trabajo_equipo: number
+  conocimiento_trabajo: number
+  productividad: number
+  cumple_sistema_gestion: number
+  total_puntos: number
+  porcentaje_calificacion: string
+  acuerdos_mejora_desempeno_colaborador: string
+  acuerdos_mejora_desempeno_jefe: string
+  necesidades_desarrollo: string
+  aspectos_positivos: string
+}
 
 interface HistorySectionProps {
   evaluationHistory: EvaluationHistory[]
 }
 
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 100 },
-  },
-}
-
-const HistorySection: React.FC<HistorySectionProps> = ({ evaluationHistory }) => {
+export const HistorySection: React.FC<HistorySectionProps> = ({ evaluationHistory }) => {
   const [currentPage, setCurrentPage] = useState(0)
   const [expandedCard, setExpandedCard] = useState<number | null>(null)
   const evaluationsPerPage = 2
@@ -46,7 +56,10 @@ const HistorySection: React.FC<HistorySectionProps> = ({ evaluationHistory }) =>
 
   return (
     <motion.div
-      variants={itemVariants}
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
+      }}
       initial="hidden"
       animate="visible"
       className="bg-gradient-to-br from-white/60 to-white/30 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/50"
@@ -181,6 +194,4 @@ const HistorySection: React.FC<HistorySectionProps> = ({ evaluationHistory }) =>
     </motion.div>
   )
 }
-
-export default HistorySection
 

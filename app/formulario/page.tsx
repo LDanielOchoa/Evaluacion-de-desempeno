@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import FormularioContent from "./page"
+import FormularioContent from "./formulario"
 
 export default function FormularioPage() {
   return (

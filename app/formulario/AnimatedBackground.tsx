@@ -1,10 +1,8 @@
-"use client"
-
 import type React from "react"
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 
-const AnimatedBackground: React.FC = () => {
+export const AnimatedBackground: React.FC = () => {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -41,6 +39,4 @@ const AnimatedBackground: React.FC = () => {
     </div>
   )
 }
-
-export default AnimatedBackground
 

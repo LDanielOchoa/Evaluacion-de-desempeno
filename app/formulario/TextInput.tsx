@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { motion } from "framer-motion"
 import { Input } from "@/components/ui/input"
@@ -14,15 +12,6 @@ interface TextInputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 100 },
-  },
-}
-
 export const TextInput: React.FC<TextInputProps> = ({
   id,
   label,
@@ -31,7 +20,16 @@ export const TextInput: React.FC<TextInputProps> = ({
   value,
   onChange,
 }) => (
-  <motion.div variants={itemVariants} initial="hidden" animate="visible" className="mb-4" whileHover={{ scale: 1.02 }}>
+  <motion.div
+    variants={{
+      hidden: { opacity: 0, y: 20 },
+      visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
+    }}
+    initial="hidden"
+    animate="visible"
+    className="mb-4"
+    whileHover={{ scale: 1.02 }}
+  >
     <Label htmlFor={id} className="block text-sm font-medium text-green-800 mb-2">
       {label} {required && <span className="text-red-500">*</span>}
     </Label>
