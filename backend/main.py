@@ -562,7 +562,42 @@ def get_user_details():
         "anos": usuario.ANOS,
         "antiguedad": usuario.ANTIGUEDAD
     }), 200
+    
+    
+@app.route('/get_employee_stats', methods=['GET'])
+def get_employee_stats():
+    cedula = request.args.get('cedula')
+    if not cedula:
+        return jsonify({"error": "Se requiere la cédula del empleado"}), 400
 
+    evaluaciones = Evaluacion.query.filter_by(cedula=cedula).all()
+
+    if not evaluaciones:
+        return jsonify({"error": "No se encontraron evaluaciones para este empleado"}), 404
+
+    anios = sorted(set(eval.anio for eval in evaluaciones))
+    resultados = {}
+
+    for evaluacion in evaluaciones:
+        resultados[evaluacion.anio] = {
+            "total_puntos": evaluacion.total_puntos,
+            "porcentaje_calificacion": evaluacion.porcentaje_calificacion,
+            "compromiso": evaluacion.compromiso_pasion_entrega,
+            "honestidad": evaluacion.honestidad,
+            "respeto": evaluacion.respeto,
+            "sencillez": evaluacion.sencillez,
+            "servicio": evaluacion.servicio,
+            "trabajo_en_equipo": evaluacion.trabajo_equipo,
+            "conocimiento": evaluacion.conocimiento_trabajo,
+            "productividad": evaluacion.productividad,
+            "gestion": evaluacion.cumple_sistema_gestion
+        }
+
+    return jsonify({
+        "anios": anios,
+        "resultados": resultados
+    })
+    
 @app.route('/')
 def hello():
     return "Backend de Evaluación de Desempeño funcionando correctamente"
