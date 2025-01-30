@@ -424,25 +424,6 @@ export function LeaderEvaluationView() {
               Bienvenido, <span className="font-semibold text-green-600">{userData?.NOMBRE}</span>
             </motion.p>
           </header>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="mb-6"
-          >
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Buscar por nombre, cédula o cargo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            </div>
-          </motion.div>
-
           <div className="space-y-4">
             {loading ? (
               <SkeletonLoader />

@@ -36,7 +36,7 @@ class Usuario(db.Model):
     ANTIGUEDAD = db.Column('Antiguedad', db.String(512))
     CLAVE = db.Column(db.String(512))
     SEGURIDAD = db.Column(db.String(512))
-    LIDER = db.Column(db.String(255))  # Added new LIDER column
+    LIDER = db.Column(db.String(255))  
 
 class Evaluacion(db.Model):
     __tablename__ = 'Colaboradores'
@@ -460,7 +460,6 @@ def get_employees_under_leader():
                 "message": "No se encontraron empleados para este líder"
             }), 200
 
-        # Obtener los detalles del líder
         leader = Usuario.query.filter_by(CEDULA=int(leader_cedula)).first()
         if not leader:
             return jsonify({"error": "Líder no encontrado"}), 404

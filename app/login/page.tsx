@@ -231,7 +231,7 @@ export default function LoginPage() {
         <div className="relative z-10 grid lg:grid-cols-2 h-full">
           <motion.div
             variants={itemVariants}
-            className="p-6 md:p-12 flex flex-col justify-center relative order-2 lg:order-1"
+            className="bg-white/40 p-6 md:p-12 flex flex-col justify-center relative order-2 lg:order-1"
           >
             <motion.div variants={itemVariants} className="text-center lg:text-left mb-8 relative">
               <motion.div
@@ -389,7 +389,7 @@ export default function LoginPage() {
             </form>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="relative order-1 lg:order-2 py-8 lg:py-0">
+          <motion.div variants={itemVariants} className="bg-white/40 relative order-1 lg:order-2 py-8 lg:py-0">
             <motion.div
               className="absolute inset-0"
               style={{

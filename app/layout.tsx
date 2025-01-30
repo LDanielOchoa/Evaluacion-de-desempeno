@@ -4,7 +4,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Evaluación de desempeño',
-  description: 'Created with v0',
+  description: 'Desempeño administrativo personal',
 }
 
 

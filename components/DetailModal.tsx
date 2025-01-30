@@ -113,7 +113,6 @@ export function DetailModal({ isOpen, onClose, item }: DetailModalProps) {
                     ))}
                   </div>
                 </div>
-
                 <div className="bg-gray-100 p-6 rounded-xl shadow-md">
                   <h4 className="font-semibold text-xl text-gray-800 mb-3 flex items-center">
                     <MessageSquare className="h-6 w-6 mr-2" />
