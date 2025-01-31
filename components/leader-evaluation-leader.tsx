@@ -223,8 +223,7 @@ export function LeaderEvaluationView() {
 
   const charts = [
     { title: "Porcentaje de Calificación", type: "bar", render: renderQualificationBar },
-    { title: "Cumplimiento por Área", type: "bar", render: renderComplianceBar },
-    { title: "Progreso a lo largo de los años", type: "line", render: renderProgressLineChart },
+    { title: "Cumplimiento por Valores Evaluados", type: "bar", render: renderComplianceBar },
   ];
 
   const nextChart = () => {
@@ -305,7 +304,7 @@ export function LeaderEvaluationView() {
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Cumplimiento por Área y Año</CardTitle>
+          <CardTitle>Cumplimiento por Item Evaluado</CardTitle>
         </CardHeader>
         <CardContent className="h-[500px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -335,65 +334,6 @@ export function LeaderEvaluationView() {
         </CardContent>
       </Card>
     )
-  }
-
-  function renderProgressLineChart() {
-    if (!employeeStats) return null
-
-    const data = employeeStats.anios.map((anio) => ({
-      anio,
-      puntos: employeeStats.resultados[anio].total_puntos,
-      porcentaje: Number.parseFloat(employeeStats.resultados[anio].porcentaje_calificacion),
-    }))
-
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Progreso a lo largo de los años</CardTitle>
-          <CardDescription>Puntos totales y porcentaje de calificación</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[400px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              onDoubleClick={handleDoubleClick}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="anio" />
-              <YAxis yAxisId="left" orientation="left" stroke={CHART_COLORS[0]} />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                stroke={CHART_COLORS[1]}
-                domain={[0, 100]}
-                tickFormatter={(value) => `${value}%`}
-              />
-              <Tooltip
-                formatter={(value: number, name: string) => [
-                  name === "puntos" ? value.toFixed(2) : `${value.toFixed(2)}%`,
-                  name === "puntos" ? "Puntos Totales" : "Porcentaje de Calificación",
-                ]}
-                labelFormatter={(label) => `Año: ${label}`}
-              />
-              <Legend />
-              <Line yAxisId="left" type="monotone" dataKey="puntos" stroke={CHART_COLORS[0]} name="Puntos Totales" />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="porcentaje"
-                stroke={CHART_COLORS[1]}
-                name="Porcentaje de Calificación"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (!isClient) {
-    return null
   }
 
   return (
@@ -520,9 +460,6 @@ export function LeaderEvaluationView() {
                                             >
                                               <ChevronRight size={24} />
                                             </Button>
-                                          </div>
-                                          <div className="text-center text-sm text-gray-500">
-                                            Haga doble clic en un elemento del gráfico para ver más detalles
                                           </div>
                                         </div>
                                       ) : (

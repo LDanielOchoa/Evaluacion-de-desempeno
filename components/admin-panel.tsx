@@ -14,6 +14,7 @@ import { EvaluationSummary } from "./EvaluationSummary"
 import { KPICards } from "./KPICards"
 import { PerformanceTrendChart } from "./PerformanceTrendChart"
 import { DepartmentComparisonChart } from "./DepartmentComparisonChart"
+import { UserManagement } from "./UserManagement"
 
 interface Evaluation {
   cedula: string
@@ -104,7 +105,9 @@ export default function AdminPanel() {
   }
 
   const uniqueYears = Array.from(new Set(evaluations.map((evaluation) => evaluation.anio))).sort((a, b) => b - a)
-  const uniqueDepartments = Array.from(new Set(evaluations.map((evaluation) => evaluation.area_jefe_pertenencia))).filter(Boolean)
+  const uniqueDepartments = Array.from(
+    new Set(evaluations.map((evaluation) => evaluation.area_jefe_pertenencia)),
+  ).filter(Boolean)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 p-8">
@@ -185,11 +188,12 @@ export default function AdminPanel() {
             >
               <KPICards evaluations={filteredEvaluations} />
               <Tabs defaultValue="charts" className="w-full mt-8">
-                <TabsList className="grid w-full grid-cols-4 mb-8">
+                <TabsList className="grid w-full grid-cols-5 mb-8">
                   <TabsTrigger value="charts">Gráficos Generales</TabsTrigger>
                   <TabsTrigger value="trends">Tendencias</TabsTrigger>
                   <TabsTrigger value="topPerformers">Mejores Desempeños</TabsTrigger>
                   <TabsTrigger value="summary">Resumen de Evaluaciones</TabsTrigger>
+                  <TabsTrigger value="users">Gestión de Usuarios</TabsTrigger>
                 </TabsList>
                 <TabsContent value="charts" className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -207,6 +211,9 @@ export default function AdminPanel() {
                 </TabsContent>
                 <TabsContent value="summary">
                   <EvaluationSummary evaluations={filteredEvaluations} />
+                </TabsContent>
+                <TabsContent value="users">
+                  <UserManagement />
                 </TabsContent>
               </Tabs>
             </motion.div>
