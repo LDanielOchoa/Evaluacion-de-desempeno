@@ -107,6 +107,88 @@ def get_all_evaluations():
         print(f"Error fetching evaluations: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/get_all_users', methods=['GET'])
+def get_all_users():
+    try:
+        users = Usuario.query.all()
+        return jsonify({
+            "success": True,
+            "users": [
+                {
+                    "CEDULA": user.CEDULA,
+                    "NOMBRE": user.NOMBRE,
+                    "CARGO": user.CARGO,
+                    "CENTRO_DE_COSTO": user.CENTRO_DE_COSTO,
+                    "LIDER_EVALUADOR": user.LIDER_EVALUADOR,
+                    "CARGO_DE_LIDER_EVALUADOR": user.CARGO_DE_LIDER_EVALUADOR,
+                    "ESTADO": user.ESTADO,
+                    "CLAVE": user.CLAVE,
+                    "SEGURIDAD": user.SEGURIDAD,
+                    "LIDER": user.LIDER
+                } for user in users
+            ]
+        })
+    except Exception as e:
+        print(f"Error fetching users: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/add_user', methods=['POST'])
+def add_user():
+    try:
+        data = request.json
+        new_user = Usuario(
+            CEDULA=data['CEDULA'],
+            NOMBRE=data['NOMBRE'],
+            CARGO=data['CARGO'],
+            CENTRO_DE_COSTO=data['CENTRO_DE_COSTO'],
+            LIDER_EVALUADOR=data['LIDER_EVALUADOR'],
+            CARGO_DE_LIDER_EVALUADOR=data['CARGO_DE_LIDER_EVALUADOR'],
+            ESTADO=data['ESTADO'],
+            CLAVE=data['CLAVE'],
+            SEGURIDAD=data['SEGURIDAD'],
+            LIDER=data['LIDER']
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({"success": True, "message": "Usuario agregado exitosamente"})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error adding user: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/update_user/<int:cedula>', methods=['PUT'])
+def update_user(cedula):
+    try:
+        user = Usuario.query.get(cedula)
+        if not user:
+            return jsonify({"success": False, "error": "Usuario no encontrado"}), 404
+        
+        data = request.json
+        for key, value in data.items():
+            setattr(user, key, value)
+        
+        db.session.commit()
+        return jsonify({"success": True, "message": "Usuario actualizado exitosamente"})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating user: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/delete_user/<int:cedula>', methods=['DELETE'])
+def delete_user(cedula):
+    try:
+        user = Usuario.query.get(cedula)
+        if not user:
+            return jsonify({"success": False, "error": "Usuario no encontrado"}), 404
+        
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"success": True, "message": "Usuario eliminado exitosamente"})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting user: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/validate_cedula', methods=['POST'])
 def validate_cedula():
     try:
