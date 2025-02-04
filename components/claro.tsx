@@ -177,7 +177,6 @@ export function SecurityModal({ isOpen, onClose, userData, onSecurityUpdate }: S
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="mascota">Nombre de tu mascota</SelectItem>
-                      <SelectItem value="fecha">Una fecha importante</SelectItem>
                       <SelectItem value="palabra">Una palabra secreta</SelectItem>
                       <SelectItem value="numero">Un número secreto</SelectItem>
                     </SelectContent>

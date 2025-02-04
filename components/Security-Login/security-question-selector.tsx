@@ -14,7 +14,6 @@ interface SecurityQuestionSelectorProps {
 
 const securityQuestions = [
   { id: "mascota", label: "Nombre de tu mascota", icon: DogIcon, component: PetNameQuestion },
-  { id: "fecha", label: "Una fecha importante", icon: Calendar, component: ImportantDateQuestion },
   { id: "palabra", label: "Una palabra secreta", icon: Book, component: SecretWordQuestion },
   { id: "numero", label: "Un número secreto", icon: Hash, component: SecretNumberQuestion },
 ]
