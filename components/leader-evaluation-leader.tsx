@@ -315,7 +315,7 @@ export function LeaderEvaluationView() {
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="area" angle={-45} textAnchor="end" interval={0} height={100} />
-              <YAxis domain={[0, 10]} />
+              <YAxis domain={[0, 4]} />
               <Tooltip
                 formatter={(value: number, name: string) => [`${value.toFixed(2)}`, `Año ${name}`]}
                 labelFormatter={(label) => `Área: ${label}`}

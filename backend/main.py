@@ -36,7 +36,8 @@ class Usuario(db.Model):
     ANTIGUEDAD = db.Column('Antiguedad', db.String(512))
     CLAVE = db.Column(db.String(512))
     SEGURIDAD = db.Column(db.String(512))
-    LIDER = db.Column(db.String(255))  
+    LIDER = db.Column(db.String(255))
+    rol = db.Column(db.String(255))
 
 class Evaluacion(db.Model):
     __tablename__ = 'Colaboradores'
@@ -70,6 +71,84 @@ class Evaluacion(db.Model):
     necesidades_desarrollo = db.Column(db.String(512))
     aspectos_positivos = db.Column(db.String(512))
     cargo_jefe_inmediato = db.Column(db.String(512))
+
+@app.route('/user-info', methods=['GET'])
+def get_user_info():
+    try:
+        # En un escenario real, obtendrías esta información del token de autenticación
+        # Por ahora, simularemos obtener la información del usuario desde la base de datos
+        cedula = request.args.get('cedula')
+        if not cedula:
+            return jsonify({"success": False, "error": "Cédula es requerida"}), 400
+
+        usuario = Usuario.query.filter_by(CEDULA=cedula).first()
+        
+        if usuario:
+            return jsonify({
+                "success": True,
+                "name": usuario.NOMBRE,
+                "role": usuario.rol
+            })
+        else:
+            return jsonify({"success": False, "error": "Usuario no encontrado"}), 404
+
+    except Exception as e:
+        logging.error(f"Error al obtener información del usuario: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        cedula = data.get("cedula")
+        clave = data.get("clave")
+
+        if not cedula or not clave:
+            return jsonify({"success": False, "error": "Cédula y clave son requeridas"}), 400
+
+        usuario = Usuario.query.filter_by(CEDULA=cedula, CLAVE=clave).first()
+        
+        if usuario:
+            return jsonify({
+                "success": True,
+                "userId": usuario.CEDULA,
+                "name": usuario.NOMBRE,
+                "role": usuario.rol
+            })
+        else:
+            return jsonify({"success": False, "error": "Credenciales inválidas"}), 401
+
+    except Exception as e:
+        logging.error(f"Error en el login: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/evaluaciones', methods=['GET'])
+def get_evaluaciones():
+    try:
+        cedula = request.args.get('cedula')
+        if not cedula:
+            return jsonify({"success": False, "error": "Cédula es requerida"}), 400
+
+        evaluaciones = Evaluacion.query.filter_by(cedula=cedula).all()
+        
+        return jsonify({
+            "success": True,
+            "evaluaciones": [
+                {
+                    "id": eval.id,
+                    "anio": eval.anio,
+                    "fecha_evaluacion": eval.marca_temporal,
+                    "cargo": eval.cargo,
+                    "total_puntos": eval.total_puntos,
+                    "porcentaje_calificacion": float(eval.porcentaje_calificacion),
+                } for eval in evaluaciones
+            ]
+        })
+
+    except Exception as e:
+        logging.error(f"Error al obtener evaluaciones: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 
 @app.route('/get_all_evaluations', methods=['GET'])
 def get_all_evaluations():
@@ -106,6 +185,28 @@ def get_all_evaluations():
     except Exception as e:
         print(f"Error fetching evaluations: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/get_user_role', methods=['POST'])
+def get_user_role():
+    try:
+        data = request.get_json()
+        cedula = data.get("cedula")
+        clave = data.get("clave")  # Validar credenciales
+
+        if not cedula or not clave:
+            return jsonify({"success": False, "error": "Cédula y clave son requeridas"}), 400
+
+        usuario = Usuario.query.filter_by(CEDULA=cedula, CLAVE=clave).first()
+        
+        if usuario:
+            return jsonify({"success": True, "rol": usuario.rol})  
+        else:
+            return jsonify({"success": False, "error": "Usuario no encontrado"}), 404
+
+    except Exception as e:
+        print(f"Error al obtener rol del usuario: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 
 @app.route('/get_all_users', methods=['GET'])
 def get_all_users():
@@ -146,7 +247,8 @@ def add_user():
             ESTADO=data['ESTADO'],
             CLAVE=data['CLAVE'],
             SEGURIDAD=data['SEGURIDAD'],
-            LIDER=data['LIDER']
+            LIDER=data['LIDER'],
+            rol=data['rol']
         )
         db.session.add(new_user)
         db.session.commit()
@@ -257,7 +359,8 @@ def validate_user():
                     "antiguedad": user.ANTIGUEDAD,
                     "requiresSecurityUpdate": user.SEGURIDAD is None or user.SEGURIDAD == "",
                     "username": user.CEDULA,
-                    "password": user.CLAVE
+                    "password": user.CLAVE,
+                    "rol": user.rol
                 })
 
         return jsonify({
@@ -651,7 +754,7 @@ def get_employee_stats():
     if not cedula:
         return jsonify({"error": "Se requiere la cédula del empleado"}), 400
 
-    evaluaciones = Evaluacion.query.filter_by(cedula=cedula).all()
+    evaluaciones =Evaluacion.query.filter_by(cedula=cedula).all()
 
     if not evaluaciones:
         return jsonify({"error": "No se encontraron evaluaciones para este empleado"}), 404

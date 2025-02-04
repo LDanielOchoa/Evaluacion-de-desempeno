@@ -28,6 +28,7 @@ import { TextInput } from "./TextInput"
 import { TextAreaInput } from "./TextAreaInput"
 import { HistorySection } from "./HistorySection"
 import { AnimatedBackground } from "./AnimatedBackground"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 type FormData = {
   historial: {}
@@ -278,13 +279,58 @@ export default function FormularioContent() {
       },
     }))
   }, [])
-
+  
   const calculateOverallRating = useCallback(() => {
     const values = Object.values(formData.valores) as number[]
     const sum = values.reduce((a, b) => a + b, 0)
     return sum / values.length
   }, [formData.valores])
 
+
+  const renderScoringCriteria = () => (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle>Criterios de Evaluación de Valores Corporativos</CardTitle>
+        <CardDescription>Puntajes y calificaciones para la evaluación de desempeño</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              stars: 4,
+              rating: "Excelente",
+              criteria: "Realiza aportes significativos a la mejora de la labor asignada",
+            },
+            {
+              stars: 3,
+              rating: "Bueno",
+              criteria: "Es comprometido con buena actitud y responde a las tareas asignadas",
+            },
+            {
+              stars: 2,
+              rating: "Necesita mejoramiento",
+              criteria: "Se recomienda mejorar las competencias propias del cargo",
+            },
+            { stars: 1, rating: "No satisfactorio", criteria: "No posee las competencias propias del cargo" },
+          ].map((item, index) => (
+            <div key={index} className="p-4 border rounded-lg bg-white shadow-sm">
+              <div className="flex items-center mb-2">
+                {[...Array(item.stars)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                ))}
+                {[...Array(4 - item.stars)].map((_, i) => (
+                  <Star key={i + item.stars} className="w-5 h-5 text-gray-300" />
+                ))}
+              </div>
+              <h3 className="font-semibold text-lg mb-1">{item.rating}</h3>
+              <p className="text-sm text-gray-600">{item.criteria}</p>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+  
   const HistorySection = React.memo(() => {
     const [currentPage, setCurrentPage] = useState(0)
     const [expandedCard, setExpandedCard] = useState<number | null>(null)
@@ -295,7 +341,10 @@ export default function FormularioContent() {
       () => evaluationHistory.slice(currentPage * evaluationsPerPage, (currentPage + 1) * evaluationsPerPage),
       [evaluationHistory, currentPage, evaluationsPerPage],
     )
-
+  
+    if (!isClient) {
+      return null
+    }
     const nextPage = useCallback(() => {
       setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
       setExpandedCard(null)
@@ -614,6 +663,7 @@ export default function FormularioContent() {
               )}
 
               {currentSection === 2 && (
+                
                 <motion.div
                   key="valores"
                   initial={{ opacity: 0, x: 20 }}
@@ -621,10 +671,14 @@ export default function FormularioContent() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                 >
+                  
                   <h2 className="text-2xl font-bold text-green-900 mb-8 flex items-center gap-3">
                     <Sparkles className="w-6 h-6" />
                     Valores Corporativos
                   </h2>
+
+                  {renderScoringCriteria()}
+
                   <div className="space-y-8">
                     <RatingInput
                       name="compromiso"

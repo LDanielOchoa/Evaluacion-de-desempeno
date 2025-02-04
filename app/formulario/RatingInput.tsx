@@ -55,10 +55,10 @@ export const RatingInput: React.FC<RatingInputProps> = ({ name, label, section, 
                 className={`w-8 h-8 sm:w-10 sm:h-10 transition-colors duration-200 ${
                   rating >= starValue
                     ? starValue >= 3
-                      ? "text-green-500"
+                      ? "text-yellow-500"
                       : starValue === 2
                         ? "text-yellow-500"
-                        : "text-red-500"
+                        : "text-yellow-500"
                     : "text-gray-300"
                 }`}
                 fill={rating >= starValue ? "currentColor" : "none"}
