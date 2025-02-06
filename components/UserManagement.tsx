@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/use-toast"
-import { Pencil, Trash2, Plus } from "lucide-react"
+import { Pencil, Trash2, Search, UserPlus } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface User {
   CEDULA: number
@@ -157,56 +159,100 @@ export function UserManagement() {
   }
 
   return (
-    <Card className="w-full mt-8">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">Gestión de Usuarios</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex justify-between items-center mb-4">
+    <div className="p-8 bg-white dark:bg-gray-900 min-h-screen">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex justify-between items-center mb-8"
+      >
+        <div className="relative w-full max-w-md">
           <Input
             type="text"
             placeholder="Buscar usuarios..."
             value={searchTerm}
             onChange={handleSearch}
-            className="max-w-sm"
+            className="pl-12 pr-4 py-3 border-2 border-green-300 rounded-full focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 transition duration-300 text-lg"
           />
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Agregar Usuario
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
-              </DialogHeader>
-              <UserForm onSubmit={handleAddUser} onCancel={() => setIsAddDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-green-500 h-6 w-6" />
         </div>
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Cédula</TableHead>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Cargo</TableHead>
-                  <TableHead>Centro de Costo</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105 text-lg">
+              <UserPlus className="mr-2 h-6 w-6" /> Agregar Usuario
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-white dark:bg-gray-800 rounded-2xl p-6">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-green-600 dark:text-green-400">
+                Agregar Nuevo Usuario
+              </DialogTitle>
+            </DialogHeader>
+            <UserForm onSubmit={handleAddUser} onCancel={() => setIsAddDialogOpen(false)} />
+          </DialogContent>
+        </Dialog>
+      </motion.div>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full"
+          />
+        </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="overflow-x-auto rounded-2xl shadow-lg"
+        >
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-green-100 dark:bg-green-800">
+                <TableHead className="font-bold text-lg text-green-800 dark:text-green-200">Avatar</TableHead>
+                <TableHead className="font-bold text-lg text-green-800 dark:text-green-200">Cédula</TableHead>
+                <TableHead className="font-bold text-lg text-green-800 dark:text-green-200">Nombre</TableHead>
+                <TableHead className="font-bold text-lg text-green-800 dark:text-green-200">Cargo</TableHead>
+                <TableHead className="font-bold text-lg text-green-800 dark:text-green-200">Centro de Costo</TableHead>
+                <TableHead className="font-bold text-lg text-green-800 dark:text-green-200">Estado</TableHead>
+                <TableHead className="font-bold text-lg text-green-800 dark:text-green-200">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <AnimatePresence>
                 {filteredUsers.map((user) => (
-                  <TableRow key={user.CEDULA}>
-                    <TableCell>{user.CEDULA}</TableCell>
-                    <TableCell>{user.NOMBRE}</TableCell>
+                  <motion.tr
+                    key={user.CEDULA}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="hover:bg-green-50 dark:hover:bg-green-700 transition-colors duration-200"
+                  >
+                    <TableCell>
+                      <Avatar className="h-12 w-12 border-2 border-green-500">
+                        <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${user.NOMBRE}`} />
+                        <AvatarFallback className="bg-green-200 text-green-800 font-bold">
+                          {user.NOMBRE.split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </TableCell>
+                    <TableCell className="font-medium">{user.CEDULA}</TableCell>
+                    <TableCell className="font-medium">{user.NOMBRE}</TableCell>
                     <TableCell>{user.CARGO}</TableCell>
                     <TableCell>{user.CENTRO_DE_COSTO}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={user.ESTADO === "Activo" ? "success" : "secondary"}
+                        className="text-sm font-semibold px-3 py-1 rounded-full"
+                      >
+                        {user.ESTADO}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button
@@ -216,32 +262,38 @@ export function UserManagement() {
                             setCurrentUser(user)
                             setIsEditDialogOpen(true)
                           }}
+                          className="text-green-600 hover:text-green-800 hover:bg-green-100 transition-colors duration-200"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteUser(user.CEDULA)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user.CEDULA)}
+                          className="text-red-600 hover:text-red-800 hover:bg-red-100 transition-colors duration-200"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
-                  </TableRow>
+                  </motion.tr>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
+              </AnimatePresence>
+            </TableBody>
+          </Table>
+        </motion.div>
+      )}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white dark:bg-gray-800 rounded-2xl p-6">
           <DialogHeader>
-            <DialogTitle>Editar Usuario</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-green-600 dark:text-green-400">Editar Usuario</DialogTitle>
           </DialogHeader>
           {currentUser && (
             <UserForm user={currentUser} onSubmit={handleUpdateUser} onCancel={() => setIsEditDialogOpen(false)} />
           )}
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   )
 }
 
@@ -286,37 +338,90 @@ function UserForm({ user, onSubmit, onCancel }: UserFormProps) {
         placeholder="Cédula"
         type="number"
         required
+        className="border-2 border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 rounded-md"
       />
-      <Input name="NOMBRE" value={formData.NOMBRE} onChange={handleChange} placeholder="Nombre" required />
-      <Input name="CARGO" value={formData.CARGO} onChange={handleChange} placeholder="Cargo" required />
+      <Input
+        name="NOMBRE"
+        value={formData.NOMBRE}
+        onChange={handleChange}
+        placeholder="Nombre"
+        required
+        className="border-2 border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 rounded-md"
+      />
+      <Input
+        name="CARGO"
+        value={formData.CARGO}
+        onChange={handleChange}
+        placeholder="Cargo"
+        required
+        className="border-2 border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 rounded-md"
+      />
       <Input
         name="CENTRO_DE_COSTO"
         value={formData.CENTRO_DE_COSTO}
         onChange={handleChange}
         placeholder="Centro de Costo"
         required
+        className="border-2 border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 rounded-md"
       />
       <Input
         name="LIDER_EVALUADOR"
         value={formData.LIDER_EVALUADOR}
         onChange={handleChange}
         placeholder="Líder Evaluador"
+        className="border-2 border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 rounded-md"
       />
       <Input
         name="CARGO_DE_LIDER_EVALUADOR"
         value={formData.CARGO_DE_LIDER_EVALUADOR}
         onChange={handleChange}
         placeholder="Cargo de Líder Evaluador"
+        className="border-2 border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 rounded-md"
       />
-      <Input name="ESTADO" value={formData.ESTADO} onChange={handleChange} placeholder="Estado" />
-      <Input name="CLAVE" value={formData.CLAVE} onChange={handleChange} placeholder="Clave" type="password" />
-      <Input name="SEGURIDAD" value={formData.SEGURIDAD} onChange={handleChange} placeholder="Seguridad" />
-      <Input name="LIDER" value={formData.LIDER} onChange={handleChange} placeholder="Líder" />
+      <Input
+        name="ESTADO"
+        value={formData.ESTADO}
+        onChange={handleChange}
+        placeholder="Estado"
+        className="border-2 border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 rounded-md"
+      />
+      <Input
+        name="CLAVE"
+        value={formData.CLAVE}
+        onChange={handleChange}
+        placeholder="Clave"
+        type="password"
+        className="border-2 border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 rounded-md"
+      />
+      <Input
+        name="SEGURIDAD"
+        value={formData.SEGURIDAD}
+        onChange={handleChange}
+        placeholder="Seguridad"
+        className="border-2 border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 rounded-md"
+      />
+      <Input
+        name="LIDER"
+        value={formData.LIDER}
+        onChange={handleChange}
+        placeholder="Líder"
+        className="border-2 border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 rounded-md"
+      />
       <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          className="hover:bg-green-100 transition-colors duration-200"
+        >
           Cancelar
         </Button>
-        <Button type="submit">Guardar</Button>
+        <Button
+          type="submit"
+          className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold transition duration-300 ease-in-out transform hover:scale-105"
+        >
+          Guardar
+        </Button>
       </div>
     </form>
   )
