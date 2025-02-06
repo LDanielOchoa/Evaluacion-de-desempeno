@@ -34,7 +34,7 @@ export function EvaluationSummary({ evaluations }: Props) {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Evaluación de {evaluation.cedula}</CardTitle>
+              <CardTitle>Evaluación de {evaluation.nombres_apellidos}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>

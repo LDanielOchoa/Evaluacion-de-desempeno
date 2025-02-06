@@ -22,12 +22,13 @@ interface Props {
 export function PerformanceTrendChart({ evaluations }: Props) {
   const calculateYearlyAverages = () => {
     const yearlyData: { [key: number]: { [key: string]: { total: number; count: number } } } = {}
+
     evaluations.forEach((evaluation) => {
       if (!yearlyData[evaluation.anio]) {
         yearlyData[evaluation.anio] = {}
       }
       Object.entries(evaluation).forEach(([key, value]) => {
-        if (typeof value === 'number' && key !== 'anio') {
+        if (typeof value === "number" && key !== "anio" && value <= 4) {  // Filtrar valores mayores a 5
           if (!yearlyData[evaluation.anio][key]) {
             yearlyData[evaluation.anio][key] = { total: 0, count: 0 }
           }
@@ -66,7 +67,7 @@ export function PerformanceTrendChart({ evaluations }: Props) {
             <LineChart data={yearlyAverages} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" />
-              <YAxis domain={[0, 4]} />
+              <YAxis domain={[0, 4]} /> {/* Asegura que el eje Y solo llegue hasta 5 */}
               <Tooltip />
               <Legend />
               {Object.keys(yearlyAverages[0] || {})
@@ -89,4 +90,3 @@ export function PerformanceTrendChart({ evaluations }: Props) {
     </motion.div>
   )
 }
-

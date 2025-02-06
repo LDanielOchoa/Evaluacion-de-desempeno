@@ -5,6 +5,7 @@ interface Evaluation {
   cedula: string
   cargo: string
   porcentaje_calificacion: number
+  nombres_apellidos: string
 }
 
 interface Props {
@@ -35,7 +36,7 @@ export function TopPerformersCard({ evaluations }: Props) {
                 className="flex justify-between items-center bg-white p-4 rounded-lg shadow"
               >
                 <div>
-                  <p className="font-semibold">Cédula: {performer.cedula}</p>
+                  <p className="font-semibold">Cédula: {performer.nombres_apellidos}</p>
                   <p className="text-sm text-gray-600">{performer.cargo}</p>
                 </div>
                 <div className="text-2xl font-bold text-green-600">
