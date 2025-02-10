@@ -10,19 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ChevronLeft, ChevronRight, Search, Calendar, User, FileText, ThumbsUp, Lightbulb } from "lucide-react"
-
-interface Evaluation {
-  nombres_apellidos: string
-  cedula: string
-  cargo: string
-  fecha_evaluacion: string
-  porcentaje_calificacion: number
-  acuerdos_mejora_desempeno_colaborador: string
-  acuerdos_mejora_desempeno_jefe: string
-  necesidades_desarrollo: string
-  aspectos_positivos: string
-}
+import { ChevronLeft, ChevronRight, Search, Calendar, User, FileText, ThumbsUp, Lightbulb, Star } from "lucide-react"
+import type { Evaluation } from "./types"
 
 interface Props {
   evaluations: Evaluation[]
@@ -157,7 +146,7 @@ function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
                 Ver detalles
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-3xl">
               <DialogHeader>
                 <DialogTitle>Detalles de la Evaluación</DialogTitle>
               </DialogHeader>
@@ -183,6 +172,20 @@ function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
                   content={evaluation.aspectos_positivos}
                 />
               </div>
+              <div className="mt-6">
+                <h4 className="font-medium text-green-700 dark:text-green-300 mb-2">Habilidades y Competencias</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <SkillRating title="Honestidad" value={evaluation.honestidad} />
+                  <SkillRating title="Servicio" value={evaluation.servicio} />
+                  <SkillRating title="Sencillez" value={evaluation.sencillez} />
+                  <SkillRating title="Respeto" value={evaluation.respeto} />
+                  <SkillRating title="Trabajo en equipo" value={evaluation.trabajo_equipo} />
+                  <SkillRating title="Compromiso" value={evaluation.compromiso_pasion_entrega} />
+                  <SkillRating title="Conocimiento del trabajo" value={evaluation.conocimiento_trabajo} />
+                  <SkillRating title="Productividad" value={evaluation.productividad} />
+                  <SkillRating title="Cumple sistema de gestión" value={evaluation.cumple_sistema_gestion} />
+                </div>
+              </div>
             </DialogContent>
           </Dialog>
         </div>
@@ -198,6 +201,11 @@ function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <SkillBadge title="Honestidad" value={evaluation.honestidad} />
+          <SkillBadge title="Servicio" value={evaluation.servicio} />
+          <SkillBadge title="Sencillez" value={evaluation.sencillez} />
+        </div>
       </CardContent>
     </Card>
   )
@@ -212,6 +220,34 @@ function EvaluationDetail({ icon, title, content }: { icon: React.ReactNode; tit
         <p className="text-gray-600 dark:text-gray-300">{content}</p>
       </div>
     </div>
+  )
+}
+
+function SkillRating({ title, value }: { title: string; value: number }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{title}</span>
+      <div className="flex items-center">
+        {[1, 2, 3, 4].map((star) => (
+          <Star
+            key={star}
+            size={16}
+            className={star <= value ? "text-yellow-400 fill-current" : "text-gray-300 dark:text-gray-600"}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SkillBadge({ title, value }: { title: string; value: number }) {
+  const colors = ["bg-red-100 text-red-800", "bg-yellow-100 text-yellow-800", "bg-green-100 text-green-800"]
+  const colorIndex = Math.min(Math.floor(value / 2), 2)
+
+  return (
+    <Badge variant="outline" className={`${colors[colorIndex]} border-transparent`}>
+      {title}: {value}
+    </Badge>
   )
 }
 
