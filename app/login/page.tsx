@@ -1,10 +1,10 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
-import { ArrowRight, LockKeyhole, User, Shield, ChevronRight, Info } from "lucide-react"
+import { ArrowRight, LockKeyhole, User, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { toast } from "react-hot-toast"
 import { NotFoundModal } from "@/components/NotFoundModal"
@@ -12,6 +12,10 @@ import { useUser } from "../contexts/userContexts"
 import { ErrorMessage } from "@/components/ErrorMessage"
 import { SecurityModal } from "@/components/SecurityModal"
 import { ForgotPasswordModal } from "../../components/Security-Login/forgot-password-modal"
+import { NoAccessModal } from "@/components/NotAccessModal"
+import { AdminChoiceModal } from "@/components/AdminChoiceModal" // Import the missing component
+
+const specialCedulas = ["1013624374", "71219707", "16758076"]
 
 export default function LoginPage() {
   const router = useRouter()
@@ -21,23 +25,23 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [isHovered, setIsHovered] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
   const [showSecurityModal, setShowSecurityModal] = useState(false)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
-  const [tempUserData, setTempUserData] = useState<{
-    CEDULA: number
-    NOMBRE: string
-    CARGO: string
-    CENTRO_DE_COSTO: string
-    LIDER_EVALUADOR: string
-    CARGO_DE_LIDER_EVALUADOR: string
-    ESTADO: string
-    ANO_INGRESO: number
-    MES_INGRESO: number
-    ANOS: number
-    ANTIGUEDAD: number
-  } | null>(null)
+  const [showNoAccessModal, setShowNoAccessModal] = useState(false)
+  const [showAdminChoiceModal, setShowAdminChoiceModal] = useState(false)
+  const [tempUserData, setTempUserData] = useState<any>(null)
+  const [particles, setParticles] = useState<Array<{ x: number; y: number; size: number; color: string }>>([])
+
+  useEffect(() => {
+    const newParticles = Array.from({ length: 50 }, () => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      size: Math.random() * 5 + 1,
+      color: `hsl(${Math.random() * 60 + 100}, 70%, ${Math.random() * 20 + 70}%)`,
+    }))
+    setParticles(newParticles)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,7 +70,7 @@ export default function LoginPage() {
 
       if (data.valid) {
         const userData = {
-          CEDULA: Number.parseInt(username),
+          CEDULA: username,
           NOMBRE: data.nombre,
           CARGO: data.cargo,
           CENTRO_DE_COSTO: data.centro_de_costo,
@@ -86,11 +90,18 @@ export default function LoginPage() {
           setUserData(userData)
           toast.success(`Bienvenido, ${data.nombre}`)
 
-          // Check if the user is a director or coordinator
-          if (userData.CARGO.startsWith("DIRECTOR") || userData.CARGO.startsWith("COORDINADOR") || userData.CARGO.startsWith("PROFESIONAL DE DESARROLLO") || userData.CARGO.startsWith("PROFESIONAL DE PLENEACION Y PROGRAMACION") || userData.CARGO.startsWith("PROFESIONAL DE SISTEMAS DE GESTION INTEGRAL"))   {
+          if (specialCedulas.includes(username)) {
+            setShowAdminChoiceModal(true)
+          } else if (
+            userData.CARGO.startsWith("DIRECTOR") ||
+            userData.CARGO.startsWith("COORDINADOR") ||
+            userData.CARGO.startsWith("PROFESIONAL DE DESARROLLO") ||
+            userData.CARGO.startsWith("PROFESIONAL DE PLENEACION Y PROGRAMACION") ||
+            userData.CARGO.startsWith("PROFESIONAL DE SISTEMAS DE GESTION INTEGRAL")
+          ) {
             router.push("/post-login")
           } else {
-            router.push("/formulario")
+            setShowNoAccessModal(true)
           }
         }
       } else {
@@ -104,165 +115,76 @@ export default function LoginPage() {
     }
   }
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3,
-      },
-    },
-  }
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { type: "spring", stiffness: 100 },
-    },
+  const handleAdminChoice = (choice: "admin" | "default") => {
+    setShowAdminChoiceModal(false)
+    router.push(choice === "admin" ? "/admin" : "/post-login")
   }
 
   const floatingVariants = {
     animate: {
-      y: [0, -20, 0],
+      y: [-10, 10, -10],
       transition: {
-        duration: 4,
+        duration: 5,
         repeat: Number.POSITIVE_INFINITY,
         ease: "easeInOut",
       },
     },
   }
 
-  const generateCircles = (count: number) => {
-    return Array.from({ length: count }, (_, i) => ({
-      id: i,
-      size: Math.random() * (200 - 80) + 80,
-      initialX: Math.random() * 100,
-      initialY: Math.random() * 100,
-      duration: Math.random() * 8 + 15,
-      delay: Math.random() * 2,
-      color: `hsl(${Math.random() * 60 + 100}, ${Math.random() * 30 + 70}%, ${Math.random() * 20 + 70}%)`,
-    }))
-  }
-
-  const circles = generateCircles(30)
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    if (e.target.name === "username") {
-      setUsername(value)
-    } else if (e.target.name === "password") {
-      setPassword(value)
-    }
-    setIsAnimating(value.toLowerCase() === "use client")
-  }
-
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-green-100 to-green-200 p-4 md:p-8 flex items-center justify-center relative overflow-hidden">
-      {circles.map((circle) => (
+      {particles.map((particle, index) => (
         <motion.div
-          key={circle.id}
-          className="absolute rounded-full mix-blend-multiply filter blur-md"
+          key={index}
+          className="absolute rounded-full"
           style={{
-            width: circle.size,
-            height: circle.size,
-            left: `${circle.initialX}%`,
-            top: `${circle.initialY}%`,
-            backgroundColor: circle.color,
-          }}
-          initial={{
-            x: 0,
-            y: 0,
-            scale: 1,
-            opacity: 0.4,
+            width: particle.size,
+            height: particle.size,
+            backgroundColor: particle.color,
+            x: particle.x,
+            y: particle.y,
           }}
           animate={{
-            x: [0, Math.random() * 50 - 25, 0],
-            y: [0, Math.random() * 50 - 25, 0],
-            scale: [1, 1.1, 1],
-            opacity: [0.4, 0.6, 0.4],
+            x: [particle.x - 50, particle.x + 50, particle.x - 50],
+            y: [particle.y - 50, particle.y + 50, particle.y - 50],
           }}
           transition={{
-            duration: circle.duration,
+            duration: Math.random() * 10 + 20,
             repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
-            delay: circle.delay,
+            ease: "linear",
           }}
         />
       ))}
 
       <motion.div
-        className="absolute top-0 left-0 w-[1000px] h-[1000px] rounded-full bg-green-300/10 filter blur-3xl"
-        initial={{
-          x: -300,
-          y: -300,
-          scale: 1,
-        }}
-        animate={{
-          x: [-300, 0, -300],
-          y: [-300, 0, -300],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{ duration: 15, repeat: Number.POSITIVE_INFINITY }}
-      />
-      <motion.div
-        className="absolute bottom-0 right-0 w-[800px] h-[800px] rounded-full bg-green-400/10 filter blur-3xl"
-        initial={{
-          x: 300,
-          y: 300,
-          scale: 1.2,
-        }}
-        animate={{
-          x: [300, 0, 300],
-          y: [300, 0, 300],
-          scale: [1.2, 1, 1.2],
-        }}
-        transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY }}
-      />
-
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
         className="w-full max-w-5xl mx-auto bg-white/30 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden"
       >
         <div className="relative z-10 grid lg:grid-cols-2 h-full">
           <motion.div
-            variants={itemVariants}
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
             className="bg-white/40 p-6 md:p-12 flex flex-col justify-center relative order-2 lg:order-1"
           >
-            <motion.div variants={itemVariants} className="text-center lg:text-left mb-8 relative">
+            <motion.div className="text-center lg:text-left mb-8 relative">
               <motion.div
-                className="absolute -top-20 -left-20 w-80 h-80 bg-green-300/20 rounded-full filter blur-3xl"
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY }}
-              />
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
                 className="flex items-center justify-center lg:justify-start mb-4"
               >
-                <Image
-                  src="/sao6.png"
-                  alt="Company Logo"
-                  width={60}
-                  height={60}
-                  className="mr-4"
-                />
+                <Image src="/sao6.png" alt="Company Logo" width={60} height={60} className="mr-4" />
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-500 to-green-700 bg-clip-text text-transparent">
                   Compromisos constructivos 2024
                 </h1>
               </motion.div>
               <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
                 className="text-black text-lg md:text-xl relative z-10"
               >
                 Ingrese su usuario y contraseña para comenzar
@@ -270,38 +192,46 @@ export default function LoginPage() {
             </motion.div>
             <ErrorMessage message={errorMessage} />
             <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto lg:mx-0">
-              <motion.div variants={itemVariants} className="space-y-4">
-                <div className="relative group">
-                  <motion.div whileHover={{ scale: 1.02 }} className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-300/20 to-green-500/20 rounded-2xl blur" />
-                    <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-black" />
-                    <Input
-                      type="text"
-                      name="username"
-                      placeholder="Ingrese su usuario"
-                      value={username}
-                      onChange={handleInputChange}
-                      className="h-12 md:h-14 pl-12 rounded-2xl border-2 border-green-200 bg-white/60 backdrop-blur-sm focus:bg-white/80 focus:border-green-400 transition-all duration-300 relative z-10"
-                    />
-                  </motion.div>
-                </div>
-                <div className="relative group">
-                  <motion.div whileHover={{ scale: 1.02 }} className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-300/20 to-green-500/20 rounded-2xl blur" />
-                    <LockKeyhole className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-black" />
-                    <Input
-                      type="password"
-                      name="password"
-                      placeholder="Ingrese su contraseña"
-                      value={password}
-                      onChange={handleInputChange}
-                      className="h-12 md:h-14 pl-12 rounded-2xl border-2 border-green-200 bg-white/60 backdrop-blur-sm focus:bg-white/80 focus:border-green-400 transition-all duration-300 relative z-10"
-                    />
-                  </motion.div>
-                </div>
+              <motion.div className="space-y-4">
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.7, duration: 0.5 }}
+                  className="relative group"
+                >
+                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-600" />
+                  <Input
+                    type="text"
+                    name="username"
+                    placeholder="Ingrese su usuario"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="h-12 md:h-14 pl-12 rounded-2xl border-2 border-green-200 bg-white/60 backdrop-blur-sm focus:bg-white/80 focus:border-green-400 transition-all duration-300 relative z-10"
+                  />
+                </motion.div>
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.8, duration: 0.5 }}
+                  className="relative group"
+                >
+                  <LockKeyhole className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-600" />
+                  <Input
+                    type="password"
+                    name="password"
+                    placeholder="Ingrese su contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-12 md:h-14 pl-12 rounded-2xl border-2 border-green-200 bg-white/60 backdrop-blur-sm focus:bg-white/80 focus:border-green-400 transition-all duration-300 relative z-10"
+                  />
+                </motion.div>
               </motion.div>
-
-              <motion.div variants={itemVariants} className="flex justify-between items-center">
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.9, duration: 0.5 }}
+                className="flex justify-between items-center"
+              >
                 <motion.button
                   type="button"
                   onClick={() => setShowForgotPassword(true)}
@@ -314,7 +244,9 @@ export default function LoginPage() {
               </motion.div>
 
               <motion.div
-                variants={itemVariants}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 1, duration: 0.5 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="relative"
@@ -389,7 +321,12 @@ export default function LoginPage() {
             </form>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="bg-white/40 relative order-1 lg:order-2 py-8 lg:py-0">
+          <motion.div
+            initial={{ x: 50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="bg-white/40 relative order-1 lg:order-2 py-8 lg:py-0"
+          >
             <motion.div
               className="absolute inset-0"
               style={{
@@ -439,6 +376,12 @@ export default function LoginPage() {
         }}
       />
       <ForgotPasswordModal isOpen={showForgotPassword} onClose={() => setShowForgotPassword(false)} />
+      <NoAccessModal isOpen={showNoAccessModal} onClose={() => setShowNoAccessModal(false)} />
+      <AdminChoiceModal
+        isOpen={showAdminChoiceModal}
+        onClose={() => setShowAdminChoiceModal(false)}
+        onChoice={handleAdminChoice}
+      />
     </div>
   )
 }
