@@ -96,7 +96,6 @@ export default function LoginPage() {
             userData.CARGO.startsWith("DIRECTOR") ||
             userData.CARGO.startsWith("COORDINADOR") ||
             userData.CARGO.startsWith("PROFESIONAL DE DESARROLLO") ||
-            userData.CARGO.startsWith("PROFESIONAL DE PLENEACION Y PROGRAMACION") ||
             userData.CARGO.startsWith("PROFESIONAL DE SISTEMAS DE GESTION INTEGRAL")
           ) {
             router.push("/post-login")
