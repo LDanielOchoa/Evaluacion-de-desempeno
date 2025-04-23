@@ -100,7 +100,7 @@ export default function LoginPage() {
           ) {
             router.push("/post-login")
           } else {
-            setShowNoAccessModal(true)
+              router.push("/post-login")
           }
         }
       } else {
@@ -375,7 +375,6 @@ export default function LoginPage() {
         }}
       />
       <ForgotPasswordModal isOpen={showForgotPassword} onClose={() => setShowForgotPassword(false)} />
-      <NoAccessModal isOpen={showNoAccessModal} onClose={() => setShowNoAccessModal(false)} />
       <AdminChoiceModal
         isOpen={showAdminChoiceModal}
         onClose={() => setShowAdminChoiceModal(false)}
