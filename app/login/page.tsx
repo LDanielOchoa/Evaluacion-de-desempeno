@@ -100,7 +100,7 @@ export default function LoginPage() {
           ) {
             router.push("/post-login")
           } else {
-              router.push("/post-login")
+            router.push("/post-login")
           }
         }
       } else {
