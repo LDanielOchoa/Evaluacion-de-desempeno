@@ -184,6 +184,7 @@ function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
                   <SkillRating title="Conocimiento del trabajo" value={evaluation.conocimiento_trabajo} />
                   <SkillRating title="Productividad" value={evaluation.productividad} />
                   <SkillRating title="Cumple sistema de gestión" value={evaluation.cumple_sistema_gestion} />
+                  <SkillRating title="Cumple sistema de gestión" value={evaluation.tarea} />
                 </div>
               </div>
             </DialogContent>

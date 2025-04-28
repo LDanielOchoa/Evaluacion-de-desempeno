@@ -71,6 +71,7 @@ class Evaluacion(db.Model):
     necesidades_desarrollo = db.Column(db.String(512))
     aspectos_positivos = db.Column(db.String(512))
     cargo_jefe_inmediato = db.Column(db.String(512))
+    tarea = db.Column(db.String(512))
 
 @app.route('/user-info', methods=['GET'])
 def get_user_info():
@@ -178,7 +179,8 @@ def get_all_evaluations():
                     "acuerdos_mejora_desempeno_colaborador": eval.acuerdos_mejora_desempeno_colaborador,
                     "acuerdos_mejora_desempeno_jefe": eval.acuerdos_mejora_desempeno_jefe,
                     "necesidades_desarrollo": eval.necesidades_desarrollo,
-                    "aspectos_positivos": eval.aspectos_positivos
+                    "aspectos_positivos": eval.aspectos_positivos,
+                    "tarea": eval.tarea,
                 } for eval in evaluations
             ]
         })
@@ -525,7 +527,8 @@ def get_evaluation_history():
                 "acuerdos_mejora_desempeno_colaborador": eval.acuerdos_mejora_desempeno_colaborador,
                 "acuerdos_mejora_desempeno_jefe": eval.acuerdos_mejora_desempeno_jefe,
                 "necesidades_desarrollo": eval.necesidades_desarrollo,
-                "aspectos_positivos": eval.aspectos_positivos
+                "aspectos_positivos": eval.aspectos_positivos,
+                "tarea": eval.tarea,
             })
         
         return jsonify({
@@ -774,7 +777,8 @@ def get_employee_stats():
             "trabajo_en_equipo": evaluacion.trabajo_equipo,
             "conocimiento": evaluacion.conocimiento_trabajo,
             "productividad": evaluacion.productividad,
-            "gestion": evaluacion.cumple_sistema_gestion
+            "gestion": evaluacion.cumple_sistema_gestion,
+            "tarea": evaluacion.tarea
         }
 
     return jsonify({
