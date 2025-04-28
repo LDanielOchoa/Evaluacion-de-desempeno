@@ -171,6 +171,11 @@ function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
                   title="Aspectos positivos"
                   content={evaluation.aspectos_positivos}
                 />
+                <EvaluationDetail
+                  icon={<ThumbsUp size={16} />}
+                  title="Aspecto a realizar"
+                  content={evaluation.tarea}
+                />
               </div>
               <div className="mt-6">
                 <h4 className="font-medium text-green-700 dark:text-green-300 mb-2">Habilidades y Competencias</h4>
@@ -184,7 +189,7 @@ function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
                   <SkillRating title="Conocimiento del trabajo" value={evaluation.conocimiento_trabajo} />
                   <SkillRating title="Productividad" value={evaluation.productividad} />
                   <SkillRating title="Cumple sistema de gestión" value={evaluation.cumple_sistema_gestion} />
-                  <SkillRating title="Cumple sistema de gestión" value={evaluation.tarea} />
+                  
                 </div>
               </div>
             </DialogContent>
