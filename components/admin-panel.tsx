@@ -23,8 +23,6 @@ import {
   ChevronLeft,
   ChevronRight,
   BarChart2,
-  TrendingUp,
-  Award,
   FileText,
   Users,
   Filter,

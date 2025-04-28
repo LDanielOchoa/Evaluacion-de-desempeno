@@ -180,7 +180,7 @@ function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
                   <SkillRating title="Sencillez" value={evaluation.sencillez} />
                   <SkillRating title="Respeto" value={evaluation.respeto} />
                   <SkillRating title="Trabajo en equipo" value={evaluation.trabajo_equipo} />
-                  <SkillRating title="Compromiso" value={evaluation.compromiso_pasion_entrega} />
+                  <SkillRating title="Compromiso" value={evaluation.compromiso} />
                   <SkillRating title="Conocimiento del trabajo" value={evaluation.conocimiento_trabajo} />
                   <SkillRating title="Productividad" value={evaluation.productividad} />
                   <SkillRating title="Cumple sistema de gestión" value={evaluation.cumple_sistema_gestion} />
