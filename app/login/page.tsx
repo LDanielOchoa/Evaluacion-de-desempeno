@@ -275,7 +275,7 @@ export default function LoginPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
-                        <span>Ver Demo</span>
+                        <span>Ingresar</span>
                         <motion.div
                           animate={
                             isHovered
