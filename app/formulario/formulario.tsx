@@ -86,7 +86,7 @@ const mockEvaluationHistory: EvaluationHistory[] = [
   {
     fecha_evaluacion: "2023-12-15",
     anio: 2024,
-    cargo: "RAMIREZ PALACIO SHARITHA",
+    cargo: "AUXILIAR DE DESARROLLO",
     compromiso: 4,
     honestidad: 4,
     respeto: 4,
