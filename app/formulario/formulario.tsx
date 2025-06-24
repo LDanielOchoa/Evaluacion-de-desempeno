@@ -103,26 +103,6 @@ const mockEvaluationHistory: EvaluationHistory[] = [
     necesidades_desarrollo: "IA Optimizar proceso de gestión documental. ",
     aspectos_positivos: "Considero que es una personal empatía y nivel de servicio para sus compañeros y colaboradores en general lo que aporta un valor agregado para la Compañía."
   },
-  {
-    fecha_evaluacion: "2022-12-10",
-    anio: 2022,
-    cargo: "ANALISTA DE DESARROLLO",
-    compromiso: 3,
-    honestidad: 4,
-    respeto: 3,
-    sencillez: 3,
-    servicio: 3,
-    trabajo_equipo: 3,
-    conocimiento_trabajo: 3,
-    productividad: 3,
-    cumple_sistema_gestion: 3,
-    total_puntos: 31,
-    porcentaje_calificacion: "77.5%",
-    acuerdos_mejora_desempeno_colaborador: "Mejorar la comunicación con el equipo y aumentar la proactividad en la resolución de problemas.",
-    acuerdos_mejora_desempeno_jefe: "Implementar un plan de seguimiento más frecuente y establecer metas específicas de mejora.",
-    necesidades_desarrollo: "Capacitación en comunicación efectiva y gestión del tiempo.",
-    aspectos_positivos: "Buen conocimiento técnico y disposición para aprender nuevas tecnologías."
-  }
 ]
 
 const sections = ["historial", "datos", "valores", "acuerdos"]

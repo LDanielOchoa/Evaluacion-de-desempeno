@@ -17,17 +17,17 @@ import { AdminChoiceModal } from "@/components/AdminChoiceModal"
 
 // Datos de ejemplo para visualización
 const mockUserData = {
-  CEDULA: 1234567890,
-  NOMBRE: "Juan Carlos Pérez Rodríguez",
-  CARGO: "ANALISTA DE DESARROLLO",
-  CENTRO_DE_COSTO: "TECNOLOGÍA E INFORMÁTICA",
-  LIDER_EVALUADOR: "María Elena González",
-  CARGO_DE_LIDER_EVALUADOR: "COORDINADOR DE DESARROLLO",
+  CEDULA: 1000896882,
+  NOMBRE: "RAMIREZ PALACIO SHARITHA",
+  CARGO: "AUXILIAR DE DESARROLLO",
+  CENTRO_DE_COSTO: "",
+  LIDER_EVALUADOR: "SANCHEZ MUÑOZ WANDA VANESSA",
+  CARGO_DE_LIDER_EVALUADOR: "PROFESIONAL DE DESARROLLO",
   ESTADO: "ACTIVO",
-  ANO_INGRESO: 2022,
-  MES_INGRESO: "3",
-  ANOS: 2,
-  ANTIGUEDAD: "2 años 3 meses"
+  ANO_INGRESO: 0,
+  MES_INGRESO: "0",
+  ANOS: 0,
+  ANTIGUEDAD: ""
 }
 
 export default function LoginPage() {
