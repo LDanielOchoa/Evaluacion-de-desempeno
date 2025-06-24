@@ -163,7 +163,7 @@ export default function LoginPage() {
                 transition={{ delay: 0.6, duration: 0.5 }}
                 className="text-black text-lg md:text-xl relative z-10"
               >
-                Ingrese su usario y contraseña para comenzar
+                Ingrese su usuario y contraseña para comenzar
               </motion.p>
             </motion.div>
             <ErrorMessage message={errorMessage} />
