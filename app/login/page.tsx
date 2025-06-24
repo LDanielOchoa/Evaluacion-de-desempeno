@@ -13,9 +13,22 @@ import { ErrorMessage } from "@/components/ErrorMessage"
 import { SecurityModal } from "@/components/SecurityModal"
 import { ForgotPasswordModal } from "../../components/Security-Login/forgot-password-modal"
 import { NoAccessModal } from "@/components/NotAccessModal"
-import { AdminChoiceModal } from "@/components/AdminChoiceModal" // Import the missing component
+import { AdminChoiceModal } from "@/components/AdminChoiceModal"
 
-const specialCedulas = ["1013624374", "71219707", "16758076"]
+// Datos de ejemplo para visualización
+const mockUserData = {
+  CEDULA: 1234567890,
+  NOMBRE: "Juan Carlos Pérez Rodríguez",
+  CARGO: "ANALISTA DE DESARROLLO",
+  CENTRO_DE_COSTO: "TECNOLOGÍA E INFORMÁTICA",
+  LIDER_EVALUADOR: "María Elena González",
+  CARGO_DE_LIDER_EVALUADOR: "COORDINADOR DE DESARROLLO",
+  ESTADO: "ACTIVO",
+  ANO_INGRESO: 2022,
+  MES_INGRESO: "3",
+  ANOS: 2,
+  ANTIGUEDAD: "2 años 3 meses"
+}
 
 export default function LoginPage() {
   const router = useRouter()
@@ -53,70 +66,34 @@ export default function LoginPage() {
     }
 
     setIsLoading(true)
-    try {
-      const response = await fetch("https://evaluacion-de-desempeno.onrender.com/validate_user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Error en la validación")
-      }
-
-      if (data.valid) {
+    
+    // Simular delay de carga
+    setTimeout(() => {
+      try {
+        // Usar datos de ejemplo para cualquier usuario/contraseña
         const userData = {
-          CEDULA: username,
-          NOMBRE: data.nombre,
-          CARGO: data.cargo,
-          CENTRO_DE_COSTO: data.centro_de_costo,
-          LIDER_EVALUADOR: data.lider_evaluador,
-          CARGO_DE_LIDER_EVALUADOR: data.cargo_de_lider_evaluador,
-          ESTADO: data.estado,
-          ANO_INGRESO: data.ano_ingreso,
-          MES_INGRESO: data.mes_ingreso,
-          ANOS: data.anos,
-          ANTIGUEDAD: data.antiguedad,
+          ...mockUserData,
+          CEDULA: parseInt(username) || mockUserData.CEDULA
         }
 
-        if (data.requiresSecurityUpdate) {
-          setTempUserData(userData)
-          setShowSecurityModal(true)
-        } else {
-          setUserData(userData)
-          toast.success(`Bienvenido, ${data.nombre}`)
-
-          if (specialCedulas.includes(username)) {
-            setShowAdminChoiceModal(true)
-          } else if (
-            userData.CARGO.startsWith("DIRECTOR") ||
-            userData.CARGO.startsWith("COORDINADOR") ||
-            userData.CARGO.startsWith("PROFESIONAL DE DESARROLLO") ||
-            userData.CARGO.startsWith("PROFESIONAL DE SISTEMAS DE GESTION INTEGRAL")
-          ) {
-            router.push("/post-login")
-          } else {
-            router.push("/post-login")
-          }
-        }
-      } else {
-        setErrorMessage("Usuario o contraseña incorrectos")
+        setUserData(userData)
+        toast.success(`Bienvenido, ${userData.NOMBRE}`)
+        
+        // Redirigir directamente al formulario
+        router.push("/formulario")
+        
+      } catch (error: any) {
+        console.error("Error:", error)
+        setErrorMessage("Error al procesar el login")
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error: any) {
-      console.error("Error:", error)
-      setErrorMessage(error.message || "Error al validar el usuario")
-    } finally {
-      setIsLoading(false)
-    }
+    }, 1000)
   }
 
   const handleAdminChoice = (choice: "admin" | "default") => {
     setShowAdminChoiceModal(false)
-    router.push(choice === "admin" ? "/admin" : "/post-login")
+    router.push(choice === "admin" ? "/admin" : "/formulario")
   }
 
   const floatingVariants = {
@@ -186,7 +163,7 @@ export default function LoginPage() {
                 transition={{ delay: 0.6, duration: 0.5 }}
                 className="text-black text-lg md:text-xl relative z-10"
               >
-                Ingrese su usuario y contraseña para comenzar
+                Ingrese su usario y contraseña para comenzar
               </motion.p>
             </motion.div>
             <ErrorMessage message={errorMessage} />
@@ -298,7 +275,7 @@ export default function LoginPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
-                        <span>Iniciar Sesión</span>
+                        <span>Ver Demo</span>
                         <motion.div
                           animate={
                             isHovered
@@ -371,7 +348,7 @@ export default function LoginPage() {
         onSecurityUpdate={(updatedData) => {
           setUserData(updatedData)
           toast.success("Seguridad actualizada con éxito")
-          router.push("/post-login")
+          router.push("/formulario")
         }}
       />
       <ForgotPasswordModal isOpen={showForgotPassword} onClose={() => setShowForgotPassword(false)} />

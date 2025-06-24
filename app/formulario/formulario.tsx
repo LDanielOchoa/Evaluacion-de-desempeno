@@ -81,6 +81,50 @@ type EvaluationHistory = {
   aspectos_positivos: string
 }
 
+// Datos de ejemplo para el historial
+const mockEvaluationHistory: EvaluationHistory[] = [
+  {
+    fecha_evaluacion: "2023-12-15",
+    anio: 2023,
+    cargo: "ANALISTA DE DESARROLLO",
+    compromiso: 4,
+    honestidad: 4,
+    respeto: 3,
+    sencillez: 4,
+    servicio: 3,
+    trabajo_equipo: 4,
+    conocimiento_trabajo: 4,
+    productividad: 3,
+    cumple_sistema_gestion: 4,
+    total_puntos: 37,
+    porcentaje_calificacion: "92.5%",
+    acuerdos_mejora_desempeno_colaborador: "Mantener el excelente nivel de compromiso y continuar desarrollando habilidades de liderazgo.",
+    acuerdos_mejora_desempeno_jefe: "Proporcionar oportunidades de capacitación en gestión de proyectos y liderazgo de equipos.",
+    necesidades_desarrollo: "Capacitación en metodologías ágiles y herramientas de gestión de proyectos.",
+    aspectos_positivos: "Excelente trabajo en equipo, gran capacidad de resolución de problemas y compromiso con los objetivos de la empresa."
+  },
+  {
+    fecha_evaluacion: "2022-12-10",
+    anio: 2022,
+    cargo: "ANALISTA DE DESARROLLO",
+    compromiso: 3,
+    honestidad: 4,
+    respeto: 3,
+    sencillez: 3,
+    servicio: 3,
+    trabajo_equipo: 3,
+    conocimiento_trabajo: 3,
+    productividad: 3,
+    cumple_sistema_gestion: 3,
+    total_puntos: 31,
+    porcentaje_calificacion: "77.5%",
+    acuerdos_mejora_desempeno_colaborador: "Mejorar la comunicación con el equipo y aumentar la proactividad en la resolución de problemas.",
+    acuerdos_mejora_desempeno_jefe: "Implementar un plan de seguimiento más frecuente y establecer metas específicas de mejora.",
+    necesidades_desarrollo: "Capacitación en comunicación efectiva y gestión del tiempo.",
+    aspectos_positivos: "Buen conocimiento técnico y disposición para aprender nuevas tecnologías."
+  }
+]
+
 const sections = ["historial", "datos", "valores", "acuerdos"]
 
 const containerVariants = {
@@ -107,6 +151,36 @@ export default function FormularioContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [currentSection, setCurrentSection] = useState(0)
   const [showSuccess, setShowSuccess] = useState(false)
+
+  const getDefaultFormData = (): FormData => ({
+    historial: {},
+    datos: {
+      nombres: "",
+      cedula: "",
+      cargo: "",
+      jefe: "",
+      cargoJefe: "",
+      area: "",
+    },
+    valores: {
+      compromiso: 0,
+      honestidad: 0,
+      respeto: 0,
+      sencillez: 0,
+      servicio: 0,
+      trabajo_equipo: 0,
+      conocimiento_trabajo: 0,
+      productividad: 0,
+      cumple_sistema_gestion: 0,
+    },
+    acuerdos: {
+      colaborador_acuerdos: "",
+      jefe_acuerdos: "",
+      desarrollo_necesidades: "",
+      aspectos_positivos: "",
+    },
+  })
+
   const [formData, setFormData] = useState<FormData>(() => {
     const formDataParam = searchParams.get("formData")
     if (formDataParam) {
@@ -150,70 +224,33 @@ export default function FormularioContent() {
   const [evaluationHistory, setEvaluationHistory] = useState<EvaluationHistory[]>([])
   const [isClient, setIsClient] = useState(false)
 
-  const getDefaultFormData = (): FormData => ({
-    historial: {},
-    datos: {
-      nombres: "",
-      cedula: "",
-      cargo: "",
-      jefe: "",
-      cargoJefe: "",
-      area: "",
-    },
-    valores: {
-      compromiso: 0,
-      honestidad: 0,
-      respeto: 0,
-      sencillez: 0,
-      servicio: 0,
-      trabajo_equipo: 0,
-      conocimiento_trabajo: 0,
-      productividad: 0,
-      cumple_sistema_gestion: 0,
-    },
-    acuerdos: {
-      colaborador_acuerdos: "",
-      jefe_acuerdos: "",
-      desarrollo_necesidades: "",
-      aspectos_positivos: "",
-    },
-  })
-
-  const fetchEvaluationHistory = useCallback(async (cedula: string) => {
-    try {
-      const response = await fetch("https://evaluacion-de-desempeno.onrender.com/get_evaluation_history", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ cedula }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Error al obtener el historial de evaluaciones")
-      }
-
-      const data = await response.json()
-      return data.history
-    } catch (error) {
-      console.error("Error:", error)
-      return []
+  // Pre-llenar datos del usuario si están disponibles
+  useEffect(() => {
+    if (userData && !formData.datos.nombres) {
+      setFormData(prev => ({
+        ...prev,
+        datos: {
+          nombres: userData.NOMBRE,
+          cedula: userData.CEDULA.toString(),
+          cargo: userData.CARGO,
+          jefe: userData.LIDER_EVALUADOR,
+          cargoJefe: userData.CARGO_DE_LIDER_EVALUADOR,
+          area: userData.CENTRO_DE_COSTO,
+        }
+      }))
     }
-  }, [])
+  }, [userData, formData.datos.nombres])
 
   useEffect(() => {
     setIsClient(true)
   }, [])
 
   useEffect(() => {
-    if (isClient && formData.datos.cedula) {
-      const getHistory = async () => {
-        const history = await fetchEvaluationHistory(formData.datos.cedula)
-        setEvaluationHistory(history)
-      }
-      getHistory()
+    if (isClient) {
+      // Usar datos de ejemplo en lugar de hacer llamada al backend
+      setEvaluationHistory(mockEvaluationHistory)
     }
-  }, [isClient, formData.datos.cedula, fetchEvaluationHistory])
+  }, [isClient])
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -228,41 +265,23 @@ export default function FormularioContent() {
         }
 
         setIsLoading(true)
-        try {
-          const response = await fetch("https://evaluacion-de-desempeno.onrender.com/submit_evaluation", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(formData),
-          })
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-
-          const data = await response.json()
-
-          if (data.error) {
-            throw new Error(data.error)
-          }
-
+        
+        // Simular envío exitoso sin backend
+        setTimeout(() => {
           setShowSuccess(true)
-          if (calculateOverallRating() >= 3) {
+          // Calcular rating directamente aquí
+          const values = Object.values(formData.valores) as number[]
+          const averageRating = values.reduce((a, b) => a + b, 0) / values.length
+          
+          if (averageRating >= 3) {
             confetti({
               particleCount: 100,
               spread: 70,
               origin: { y: 0.6 },
             })
           }
-        } catch (error) {
-          console.error("Error:", error)
-          alert(
-            `Error al enviar la evaluación: ${error instanceof Error ? error.message : "Unknown error"}. Por favor, intente de nuevo.`,
-          )
-        } finally {
           setIsLoading(false)
-        }
+        }, 2000)
       } else {
         setCurrentSection((prev) => prev + 1)
       }
@@ -280,13 +299,6 @@ export default function FormularioContent() {
     }))
   }, [])
   
-  const calculateOverallRating = useCallback(() => {
-    const values = Object.values(formData.valores) as number[]
-    const sum = values.reduce((a, b) => a + b, 0)
-    return sum / values.length
-  }, [formData.valores])
-
-
   const renderScoringCriteria = () => (
     <Card className="mb-8">
       <CardHeader>
@@ -857,9 +869,9 @@ export default function FormularioContent() {
                   transition={{ type: "spring", stiffness: 200, damping: 15 }}
                   className="w20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"
                 >
-                  {calculateOverallRating() >= 3 ? (
+                  {formData.valores.compromiso >= 3 ? (
                     <Award className="w-10 h-10 text-green-600" />
-                  ) : calculateOverallRating() >= 2 ? (
+                  ) : formData.valores.compromiso >= 2 ? (
                     <ThumbsUp className="w-10 h-10 text-yellow-600" />
                   ) : (
                     <Frown className="w-10 h-10 text-red-600" />
@@ -872,9 +884,9 @@ export default function FormularioContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                 >
-                  {calculateOverallRating() >= 3
+                  {formData.valores.compromiso >= 3
                     ? "¡Excelente trabajo! Tu compromiso con nuestros valores corporativos es ejemplar. Sigue así, eres un pilar fundamental para nuestro equipo."
-                    : calculateOverallRating() >= 2
+                    : formData.valores.compromiso >= 2
                       ? "Buen trabajo. Has demostrado un sólido entendimiento de nuestros valores corporativos. Hay espacio para crecer, ¡y estamos aquí para apoyarte!"
                       : "Gracias por completar la evaluación. Vemos oportunidades para mejorar en la alineación con nuestros valores corporativos. ¡Trabajemos juntos para tu desarrollo!"}
                 </motion.p>
