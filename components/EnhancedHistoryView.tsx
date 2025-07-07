@@ -111,33 +111,47 @@ export function EnhancedHistoryView() {
         throw new Error("Usuario no encontrado")
       }
       
-      // Filtrar y formatear las evaluaciones
-      const evaluacionesFormateadas = evaluaciones
+      // Filtrar evaluaciones por cédula
+      const evaluacionesUsuario = evaluaciones
         .filter((evaluacion: any) => evaluacion.cedula === userData.CEDULA)
-        .map((evaluacion: any) => ({
-          id: evaluacion.id || Math.random().toString(36).substr(2, 9),
-          nombre: evaluacion.nombres_apellidos || usuario.NOMBRE,
-          cargo: evaluacion.cargo || usuario.CARGO,
-          fecha: evaluacion.fecha_evaluacion || new Date().toISOString().split('T')[0],
-          accion: "Evaluación de Desempeño",
-          puntaje_total: evaluacion.total_puntos || 0,
-          porcentaje_calificacion: parseFloat(evaluacion.porcentaje_calificacion) || 0,
-          detalles: {
-            compromiso: evaluacion.compromiso_pasion_entrega || 0,
-            honestidad: evaluacion.honestidad || 0,
-            respeto: evaluacion.respeto || 0,
-            sencillez: evaluacion.sencillez || 0,
-            servicio: evaluacion.servicio || 0,
-            trabajo_equipo: evaluacion.trabajo_equipo || 0,
-            conocimiento_trabajo: evaluacion.conocimiento_trabajo || 0,
-            productividad: evaluacion.productividad || 0,
-            cumple_sistema_gestion: evaluacion.cumple_sistema_gestion || 0,
-            acuerdos_mejora_desempeno_colaborador: evaluacion.acuerdos_mejora_desempeno_colaborador || "",
-            acuerdos_mejora_desempeno_jefe: evaluacion.acuerdos_mejora_desempeno_jefe || "",
-            necesidades_desarrollo: evaluacion.necesidades_desarrollo || "",
-            aspectos_positivos: evaluacion.aspectos_positivos || ""
-          }
-        }))
+      
+      // Obtener el año más reciente de las evaluaciones del usuario
+      const añosDisponibles = [...new Set(evaluacionesUsuario.map((evaluacion: any) => 
+        evaluacion.anio || new Date(evaluacion.fecha_evaluacion).getFullYear()
+      ))]
+      const añoMásReciente = Math.max(...añosDisponibles.map(Number))
+      
+      // Filtrar solo las evaluaciones del año más reciente
+      const evaluacionesDelÚltimoAño = evaluacionesUsuario.filter((evaluacion: any) => {
+        const añoEvaluacion = evaluacion.anio || new Date(evaluacion.fecha_evaluacion).getFullYear()
+        return añoEvaluacion === añoMásReciente
+      })
+      
+      // Formatear las evaluaciones del último año
+      const evaluacionesFormateadas = evaluacionesDelÚltimoAño.map((evaluacion: any) => ({
+        id: evaluacion.id || Math.random().toString(36).substr(2, 9),
+        nombre: evaluacion.nombres_apellidos || usuario.NOMBRE,
+        cargo: evaluacion.cargo || usuario.CARGO,
+        fecha: evaluacion.fecha_evaluacion || new Date().toISOString().split('T')[0],
+        accion: "Evaluación de Desempeño",
+        puntaje_total: evaluacion.total_puntos || 0,
+        porcentaje_calificacion: parseFloat(evaluacion.porcentaje_calificacion) || 0,
+        detalles: {
+          compromiso: evaluacion.compromiso_pasion_entrega || 0,
+          honestidad: evaluacion.honestidad || 0,
+          respeto: evaluacion.respeto || 0,
+          sencillez: evaluacion.sencillez || 0,
+          servicio: evaluacion.servicio || 0,
+          trabajo_equipo: evaluacion.trabajo_equipo || 0,
+          conocimiento_trabajo: evaluacion.conocimiento_trabajo || 0,
+          productividad: evaluacion.productividad || 0,
+          cumple_sistema_gestion: evaluacion.cumple_sistema_gestion || 0,
+          acuerdos_mejora_desempeno_colaborador: evaluacion.acuerdos_mejora_desempeno_colaborador || "",
+          acuerdos_mejora_desempeno_jefe: evaluacion.acuerdos_mejora_desempeno_jefe || "",
+          necesidades_desarrollo: evaluacion.necesidades_desarrollo || "",
+          aspectos_positivos: evaluacion.aspectos_positivos || ""
+        }
+      }))
       
       setHistorial(evaluacionesFormateadas)
     } catch (error) {

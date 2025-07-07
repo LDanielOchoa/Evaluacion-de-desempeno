@@ -47,22 +47,36 @@ export default function HistorialViewer() {
         // Filtrar evaluaciones por cédula
         const evaluacionesUsuario = evaluaciones
           .filter((evaluacion: any) => evaluacion.cedula.toString() === userData.CEDULA.toString())
-          .map((evaluacion: any, index: number) => ({
-            id: index + 1,
-            nombre: evaluacion.nombres_apellidos || userData.NOMBRE,
-            cargo: evaluacion.cargo || userData.CARGO,
-            fecha: evaluacion.fecha_evaluacion || new Date().toISOString().split('T')[0],
-            accion: "Evaluación de Desempeño",
-            puntaje_total: evaluacion.total_puntos || 0,
-            porcentaje_calificacion: `${evaluacion.porcentaje_calificacion}%`
-          }))
+        
+        // Obtener el año más reciente de las evaluaciones del usuario
+        const añosDisponibles = [...new Set(evaluacionesUsuario.map((evaluacion: any) => 
+          evaluacion.anio || new Date(evaluacion.fecha_evaluacion).getFullYear()
+        ))]
+        const añoMásReciente = Math.max(...añosDisponibles.map(Number))
+        
+        // Filtrar solo las evaluaciones del año más reciente
+        const evaluacionesDelÚltimoAño = evaluacionesUsuario.filter((evaluacion: any) => {
+          const añoEvaluacion = evaluacion.anio || new Date(evaluacion.fecha_evaluacion).getFullYear()
+          return añoEvaluacion === añoMásReciente
+        })
+        
+        // Mapear las evaluaciones del último año
+        const evaluacionesFormateadas = evaluacionesDelÚltimoAño.map((evaluacion: any, index: number) => ({
+          id: index + 1,
+          nombre: evaluacion.nombres_apellidos || userData.NOMBRE,
+          cargo: evaluacion.cargo || userData.CARGO,
+          fecha: evaluacion.fecha_evaluacion || new Date().toISOString().split('T')[0],
+          accion: "Evaluación de Desempeño",
+          puntaje_total: evaluacion.total_puntos || 0,
+          porcentaje_calificacion: `${evaluacion.porcentaje_calificacion}%`
+        }))
         
         // Ordenar por fecha descendente
-        evaluacionesUsuario.sort((a: any, b: any) => 
+        evaluacionesFormateadas.sort((a: any, b: any) => 
           new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
         )
         
-        setHistorial(evaluacionesUsuario)
+        setHistorial(evaluacionesFormateadas)
       } catch (error) {
         console.error("Error al cargar el historial:", error)
       }

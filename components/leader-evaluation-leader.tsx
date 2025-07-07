@@ -148,26 +148,26 @@ export function LeaderEvaluationView() {
       const evaluaciones = await response.json()
       
       // Filtrar evaluaciones del empleado
-      const evaluacionesEmpleado = evaluaciones.filter((eval: any) => 
-        eval.cedula.toString() === cedula
+      const evaluacionesEmpleado = evaluaciones.filter((evaluacion: any) => 
+        evaluacion.cedula.toString() === cedula
       )
       
       // Agrupar evaluaciones por año
-      const evaluacionesPorAnio = evaluacionesEmpleado.reduce((acc: any, eval: any) => {
-        const anio = new Date(eval.fecha_evaluacion).getFullYear()
+      const evaluacionesPorAnio = evaluacionesEmpleado.reduce((acc: any, evaluacion: any) => {
+        const anio = evaluacion.anio || new Date(evaluacion.fecha_evaluacion).getFullYear()
         if (!acc[anio]) {
           acc[anio] = {
-            total_puntos: eval.total_puntos,
-            porcentaje_calificacion: `${eval.porcentaje_calificacion}%`,
-            compromiso: eval.compromiso_pasion_entrega,
-            honestidad: eval.honestidad,
-            respeto: eval.respeto,
-            sencillez: eval.sencillez,
-            servicio: eval.servicio,
-            trabajo_en_equipo: eval.trabajo_equipo,
-            conocimiento: eval.conocimiento_trabajo,
-            productividad: eval.productividad,
-            gestion: eval.cumple_sistema_gestion
+            total_puntos: evaluacion.total_puntos,
+            porcentaje_calificacion: `${evaluacion.porcentaje_calificacion}%`,
+            compromiso: evaluacion.compromiso_pasion_entrega,
+            honestidad: evaluacion.honestidad,
+            respeto: evaluacion.respeto,
+            sencillez: evaluacion.sencillez,
+            servicio: evaluacion.servicio,
+            trabajo_en_equipo: evaluacion.trabajo_equipo,
+            conocimiento: evaluacion.conocimiento_trabajo,
+            productividad: evaluacion.productividad,
+            gestion: evaluacion.cumple_sistema_gestion
           }
         }
         return acc

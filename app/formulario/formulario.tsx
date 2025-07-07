@@ -104,10 +104,22 @@ const loadEvaluationHistory = async (userCedula: number): Promise<EvaluationHist
       cedulasSubordinados.includes(evaluacion.cedula)
     )
     
+    // Obtener el año más reciente de las evaluaciones
+    const añosDisponibles = [...new Set(evaluacionesRelevantes.map((evaluacion: any) => 
+      evaluacion.anio || new Date(evaluacion.fecha_evaluacion).getFullYear()
+    ))]
+    const añoMásReciente = Math.max(...añosDisponibles.map(Number))
+    
+    // Filtrar solo las evaluaciones del año más reciente
+    const evaluacionesDelÚltimoAño = evaluacionesRelevantes.filter((evaluacion: any) => {
+      const añoEvaluacion = evaluacion.anio || new Date(evaluacion.fecha_evaluacion).getFullYear()
+      return añoEvaluacion === añoMásReciente
+    })
+    
     // Convertir al formato esperado
-    return evaluacionesRelevantes.map((evaluacion: any) => ({
-      fecha_evaluacion: new Date().toISOString().split('T')[0], // Fecha actual como ejemplo
-      anio: 2024,
+    return evaluacionesDelÚltimoAño.map((evaluacion: any) => ({
+      fecha_evaluacion: evaluacion.fecha_evaluacion || new Date().toISOString().split('T')[0],
+      anio: evaluacion.anio || new Date(evaluacion.fecha_evaluacion).getFullYear(),
       cargo: evaluacion.cargo,
       nombres_apellidos: evaluacion.nombres_apellidos,
       cedula: evaluacion.cedula,
