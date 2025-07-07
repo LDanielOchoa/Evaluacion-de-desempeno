@@ -22,18 +22,51 @@ import {
 } from "lucide-react"
 import { DetailModal } from "./DetailModal"
 
+interface HistorialItem {
+  id: string
+  nombre: string
+  cargo: string
+  fecha: string
+  accion: string
+  puntaje_total: number
+  porcentaje_calificacion: number
+  detalles: {
+    compromiso: number
+    honestidad: number
+    respeto: number
+    sencillez: number
+    servicio: number
+    trabajo_equipo: number
+    conocimiento_trabajo: number
+    productividad: number
+    cumple_sistema_gestion: number
+    acuerdos_mejora_desempeno_colaborador: string
+    acuerdos_mejora_desempeno_jefe: string
+    necesidades_desarrollo: string
+    aspectos_positivos: string
+  }
+}
+
+interface GroupedHistorial {
+  [key: string]: HistorialItem[]
+}
+
+interface CurrentIndexes {
+  [key: string]: number
+}
+
 export function EnhancedHistoryView() {
   const router = useRouter()
   const { userData } = useUser()
-  const [historial, setHistorial] = useState([])
+  const [historial, setHistorial] = useState<HistorialItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
   const [isHovered, setIsHovered] = useState(false)
-  const [selectedItem, setSelectedItem] = useState(null)
+  const [selectedItem, setSelectedItem] = useState<HistorialItem | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [groupedHistorial, setGroupedHistorial] = useState({})
-  const [currentIndexes, setCurrentIndexes] = useState({})
+  const [groupedHistorial, setGroupedHistorial] = useState<GroupedHistorial>({})
+  const [currentIndexes, setCurrentIndexes] = useState<CurrentIndexes>({})
 
   useEffect(() => {
     fetchHistorial()
@@ -41,7 +74,7 @@ export function EnhancedHistoryView() {
 
   useEffect(() => {
     if (historial.length > 0) {
-      const grouped = historial.reduce((acc, item) => {
+      const grouped = historial.reduce<GroupedHistorial>((acc, item) => {
         if (!acc[item.nombre]) {
           acc[item.nombre] = []
         }
@@ -50,7 +83,7 @@ export function EnhancedHistoryView() {
       }, {})
       setGroupedHistorial(grouped)
       setCurrentIndexes(
-        Object.keys(grouped).reduce((acc, name) => {
+        Object.keys(grouped).reduce<CurrentIndexes>((acc, name) => {
           acc[name] = 0
           return acc
         }, {}),
@@ -59,14 +92,54 @@ export function EnhancedHistoryView() {
   }, [historial])
 
   const fetchHistorial = async () => {
+    if (!userData?.CEDULA) return
+    
     setLoading(true)
     try {
-      const response = await fetch(`https://evaluacion-de-desempeno.onrender.com/historial?cedula=${userData?.CEDULA}`)
-      if (!response.ok) {
-        throw new Error("Error al obtener el historial")
+      // Cargar datos de evaluaciones y usuarios
+      const [evaluacionesResponse, usuariosResponse] = await Promise.all([
+        fetch('/data.json'),
+        fetch('/usuarios_data.json')
+      ])
+      
+      const evaluaciones = await evaluacionesResponse.json()
+      const usuarios = await usuariosResponse.json()
+      
+      // Encontrar el usuario actual
+      const usuario = usuarios.find((u: any) => u.CEDULA === userData.CEDULA)
+      if (!usuario) {
+        throw new Error("Usuario no encontrado")
       }
-      const data = await response.json()
-      setHistorial(data.historial)
+      
+      // Filtrar y formatear las evaluaciones
+      const evaluacionesFormateadas = evaluaciones
+        .filter((evaluacion: any) => evaluacion.cedula === userData.CEDULA)
+        .map((evaluacion: any) => ({
+          id: evaluacion.id || Math.random().toString(36).substr(2, 9),
+          nombre: evaluacion.nombres_apellidos || usuario.NOMBRE,
+          cargo: evaluacion.cargo || usuario.CARGO,
+          fecha: evaluacion.fecha_evaluacion || new Date().toISOString().split('T')[0],
+          accion: "Evaluación de Desempeño",
+          puntaje_total: evaluacion.total_puntos || 0,
+          porcentaje_calificacion: parseFloat(evaluacion.porcentaje_calificacion) || 0,
+          detalles: {
+            compromiso: evaluacion.compromiso_pasion_entrega || 0,
+            honestidad: evaluacion.honestidad || 0,
+            respeto: evaluacion.respeto || 0,
+            sencillez: evaluacion.sencillez || 0,
+            servicio: evaluacion.servicio || 0,
+            trabajo_equipo: evaluacion.trabajo_equipo || 0,
+            conocimiento_trabajo: evaluacion.conocimiento_trabajo || 0,
+            productividad: evaluacion.productividad || 0,
+            cumple_sistema_gestion: evaluacion.cumple_sistema_gestion || 0,
+            acuerdos_mejora_desempeno_colaborador: evaluacion.acuerdos_mejora_desempeno_colaborador || "",
+            acuerdos_mejora_desempeno_jefe: evaluacion.acuerdos_mejora_desempeno_jefe || "",
+            necesidades_desarrollo: evaluacion.necesidades_desarrollo || "",
+            aspectos_positivos: evaluacion.aspectos_positivos || ""
+          }
+        }))
+      
+      setHistorial(evaluacionesFormateadas)
     } catch (error) {
       setError("Error al cargar el historial")
       console.error(error)
@@ -76,23 +149,31 @@ export function EnhancedHistoryView() {
   }
 
   const filteredHistorial = Object.entries(groupedHistorial).filter(
-    ([name, items]) =>
+    ([name, items]: [string, HistorialItem[]]) =>
       name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      items.some((item: any) => item.cargo.toLowerCase().includes(searchTerm.toLowerCase())),
+      items.some((item) => item.cargo.toLowerCase().includes(searchTerm.toLowerCase())),
   )
 
   const handlePrev = (name: string) => {
-    setCurrentIndexes((prev) => ({
-      ...prev,
-      [name]: (prev[name] - 1 + groupedHistorial[name].length) % groupedHistorial[name].length,
-    }))
+    setCurrentIndexes((prev: CurrentIndexes) => {
+      const currentIndex = prev[name] || 0
+      const items = groupedHistorial[name] || []
+      return {
+        ...prev,
+        [name]: (currentIndex - 1 + items.length) % items.length,
+      }
+    })
   }
 
   const handleNext = (name: string) => {
-    setCurrentIndexes((prev) => ({
-      ...prev,
-      [name]: (prev[name] + 1) % groupedHistorial[name].length,
-    }))
+    setCurrentIndexes((prev: CurrentIndexes) => {
+      const currentIndex = prev[name] || 0
+      const items = groupedHistorial[name] || []
+      return {
+        ...prev,
+        [name]: (currentIndex + 1) % items.length,
+      }
+    })
   }
 
   const getStatusColor = (porcentaje: number) => {

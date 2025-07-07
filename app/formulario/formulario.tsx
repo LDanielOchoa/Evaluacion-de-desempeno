@@ -235,41 +235,51 @@ export default function FormularioContent() {
   // Función para cargar datos de una persona específica desde las evaluaciones
   const loadPersonData = async (evaluation: EvaluationHistory) => {
     try {
-      // Cargar datos del empleado desde usuarios_data.json
-      const response = await fetch('/usuarios_data.json')
-      const usuarios = await response.json()
+      // Cargar datos del empleado desde usuarios_data.json y evaluaciones desde data.json
+      const [usuariosResponse, evaluacionesResponse] = await Promise.all([
+        fetch('/usuarios_data.json'),
+        fetch('/data.json')
+      ])
+      
+      const usuarios = await usuariosResponse.json()
+      const evaluaciones = await evaluacionesResponse.json()
       
       // Buscar el empleado por su cédula
       const empleado = usuarios.find((usuario: any) => usuario.CEDULA === evaluation.cedula)
       
-      if (empleado) {
-        // Actualizar los datos del formulario con la información del empleado seleccionado
+      // Buscar la evaluación completa en data.json por cédula
+      const evaluacionCompleta = evaluaciones.find((evaluacion: any) => 
+        evaluacion.cedula === evaluation.cedula
+      )
+      
+      if (empleado && evaluacionCompleta) {
+        // Actualizar los datos del formulario combinando información del empleado y la evaluación
         setFormData(prev => ({
           ...prev,
           datos: {
-            nombres: empleado.NOMBRE || "",
-            cedula: empleado.CEDULA?.toString() || "",
-            cargo: empleado.CARGO || "",
-            jefe: empleado["LIDER EVALUADOR"] || "",
-            cargoJefe: empleado["CARGO DE LIDER EVALUADOR"] || "",
-            area: empleado["CENTRO DE COSTO"] || "",
+            nombres: evaluacionCompleta.nombres_apellidos || empleado.NOMBRE || "",
+            cedula: evaluacionCompleta.cedula?.toString() || empleado.CEDULA?.toString() || "",
+            cargo: evaluacionCompleta.cargo || empleado.CARGO || "",
+            jefe: evaluacionCompleta.nombre_jefe_inmediato || empleado["LIDER EVALUADOR"] || "",
+            cargoJefe: evaluacionCompleta.cargo_jefe_inmediato || empleado["CARGO DE LIDER EVALUADOR"] || "",
+            area: evaluacionCompleta.area_jefe_pertenencia || empleado["CENTRO DE COSTO"] || "",
           },
           valores: {
-            compromiso: evaluation.compromiso || 0,
-            honestidad: evaluation.honestidad || 0,
-            respeto: evaluation.respeto || 0,
-            sencillez: evaluation.sencillez || 0,
-            servicio: evaluation.servicio || 0,
-            trabajo_equipo: evaluation.trabajo_equipo || 0,
-            conocimiento_trabajo: evaluation.conocimiento_trabajo || 0,
-            productividad: evaluation.productividad || 0,
-            cumple_sistema_gestion: evaluation.cumple_sistema_gestion || 0,
+            compromiso: evaluacionCompleta.compromiso_pasion_entrega || 0,
+            honestidad: evaluacionCompleta.honestidad || 0,
+            respeto: evaluacionCompleta.respeto || 0,
+            sencillez: evaluacionCompleta.sencillez || 0,
+            servicio: evaluacionCompleta.servicio || 0,
+            trabajo_equipo: evaluacionCompleta.trabajo_equipo || 0,
+            conocimiento_trabajo: evaluacionCompleta.conocimiento_trabajo || 0,
+            productividad: evaluacionCompleta.productividad || 0,
+            cumple_sistema_gestion: evaluacionCompleta.cumple_sistema_gestion || 0,
           },
           acuerdos: {
-            colaborador_acuerdos: evaluation.acuerdos_mejora_desempeno_colaborador || "",
-            jefe_acuerdos: evaluation.acuerdos_mejora_desempeno_jefe || "",
-            desarrollo_necesidades: evaluation.necesidades_desarrollo || "",
-            aspectos_positivos: evaluation.aspectos_positivos || "",
+            colaborador_acuerdos: evaluacionCompleta.acuerdos_mejora_desempeno_colaborador || "",
+            jefe_acuerdos: evaluacionCompleta.acuerdos_mejora_desempeno_jefe || "",
+            desarrollo_necesidades: evaluacionCompleta.necesidades_desarrollo || "",
+            aspectos_positivos: evaluacionCompleta.aspectos_positivos || "",
           }
         }))
         

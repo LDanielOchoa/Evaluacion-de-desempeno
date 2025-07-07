@@ -101,24 +101,29 @@ export function LeaderEvaluationView() {
     setLoading(true)
     setError("")
     try {
-      const response = await fetch(
-        `https://evaluacion-de-desempeno.onrender.com/get_employees_under_leader?cedula=${leaderId}&year=2025`,
-      )
-      const data: ServerResponse = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Error al obtener los empleados")
-      }
-
-      if (data.success) {
-        setEvaluations(data.employees)
-        if (data.employees.length === 0) {
-          toast({
-            description: "No se encontraron empleados para este líder",
-          })
-        }
-      } else {
-        throw new Error(data.error || "Error desconocido")
+      // Cargar datos de usuarios
+      const response = await fetch('/usuarios_data.json')
+      const usuarios = await response.json()
+      
+      // Filtrar empleados que tienen al líder actual como evaluador
+      const empleados = usuarios
+        .filter((usuario: any) => usuario.Cedula?.toString() === leaderId)
+        .map((empleado: any) => ({
+          cedula: empleado.CEDULA.toString(),
+          nombre: empleado.NOMBRE,
+          cargo: empleado.CARGO,
+          centro_de_costo: empleado["CENTRO DE COSTO"],
+          lider_evaluador: empleado["LIDER EVALUADOR"],
+          cargo_de_lider_evaluador: empleado["CARGO DE LIDER EVALUADOR"],
+          ultima_evaluacion: empleado.C0550_FECHA_INGRESO || "",
+          evaluado_este_ano: false // Por defecto, asumimos que no ha sido evaluado
+        }))
+      
+      setEvaluations(empleados)
+      if (empleados.length === 0) {
+        toast({
+          description: "No se encontraron empleados para este líder",
+        })
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Error al cargar los empleados"
@@ -137,15 +142,43 @@ export function LeaderEvaluationView() {
     setLoadingStats(true)
     try {
       setEmployeeStats(null)
-      const response = await fetch(`https://evaluacion-de-desempeno.onrender.com/get_employee_stats?cedula=${cedula}`)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+      
+      // Cargar datos de evaluaciones
+      const response = await fetch('/data.json')
+      const evaluaciones = await response.json()
+      
+      // Filtrar evaluaciones del empleado
+      const evaluacionesEmpleado = evaluaciones.filter((eval: any) => 
+        eval.cedula.toString() === cedula
+      )
+      
+      // Agrupar evaluaciones por año
+      const evaluacionesPorAnio = evaluacionesEmpleado.reduce((acc: any, eval: any) => {
+        const anio = new Date(eval.fecha_evaluacion).getFullYear()
+        if (!acc[anio]) {
+          acc[anio] = {
+            total_puntos: eval.total_puntos,
+            porcentaje_calificacion: `${eval.porcentaje_calificacion}%`,
+            compromiso: eval.compromiso_pasion_entrega,
+            honestidad: eval.honestidad,
+            respeto: eval.respeto,
+            sencillez: eval.sencillez,
+            servicio: eval.servicio,
+            trabajo_en_equipo: eval.trabajo_equipo,
+            conocimiento: eval.conocimiento_trabajo,
+            productividad: eval.productividad,
+            gestion: eval.cumple_sistema_gestion
+          }
+        }
+        return acc
+      }, {})
+      
+      const stats = {
+        anios: Object.keys(evaluacionesPorAnio).map(Number),
+        resultados: evaluacionesPorAnio
       }
-      const data = await response.json()
-      if (data.error) {
-        throw new Error(data.error)
-      }
-      setEmployeeStats(data)
+      
+      setEmployeeStats(stats)
     } catch (error) {
       console.error("Error al obtener las estadísticas:", error)
       toast({
@@ -175,24 +208,29 @@ export function LeaderEvaluationView() {
 
   const handleStartEvaluation = async (cedula: string) => {
     try {
-      const response = await fetch(`https://evaluacion-de-desempeno.onrender.com/get_user_details?cedula=${cedula}`)
-      if (!response.ok) {
-        throw new Error("Error al obtener los detalles del usuario")
+      // Cargar datos del usuario
+      const response = await fetch('/usuarios_data.json')
+      const usuarios = await response.json()
+      
+      // Encontrar el usuario por cédula
+      const usuario = usuarios.find((u: any) => u.CEDULA.toString() === cedula)
+      
+      if (!usuario) {
+        throw new Error("Usuario no encontrado")
       }
-      const userDetails = await response.json()
 
       const formData = {
         historial: {},
         datos: {
-          nombres: userDetails.nombre || "",
-          cedula: userDetails.cedula || "",
-          cargo: userDetails.cargo || "",
-          jefe: userDetails.lider_evaluador || "",
-          cargoJefe: userDetails.cargo_de_lider_evaluador || "",
-          area: userDetails.centro_de_costo || "",
+          nombres: usuario.NOMBRE || "",
+          cedula: usuario.CEDULA?.toString() || "",
+          cargo: usuario.CARGO || "",
+          jefe: usuario["LIDER EVALUADOR"] || "",
+          cargoJefe: usuario["CARGO DE LIDER EVALUADOR"] || "",
+          area: usuario["CENTRO DE COSTO"] || "",
         },
         valores: {
-        compromiso: 0,
+          compromiso: 0,
           honestidad: 0,
           respeto: 0,
           sencillez: 0,

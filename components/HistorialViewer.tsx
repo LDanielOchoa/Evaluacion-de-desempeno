@@ -35,31 +35,41 @@ interface HistorialResponse {
 export default function HistorialViewer() {
   const { userData } = useUser()
   const [historial, setHistorial] = useState<HistorialItem[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-
   useEffect(() => {
     const fetchHistorial = async () => {
       if (!userData?.CEDULA) return
 
       try {
-        const response = await fetch(
-          `https://evaluacion-de-desempeno.onrender.com/historial?cedula=${userData.CEDULA}&page=${currentPage}&per_page=10`,
+        // Cargar datos de evaluaciones
+        const response = await fetch('/data.json')
+        const evaluaciones = await response.json()
+        
+        // Filtrar evaluaciones por cédula
+        const evaluacionesUsuario = evaluaciones
+          .filter((evaluacion: any) => evaluacion.cedula.toString() === userData.CEDULA.toString())
+          .map((evaluacion: any, index: number) => ({
+            id: index + 1,
+            nombre: evaluacion.nombres_apellidos || userData.NOMBRE,
+            cargo: evaluacion.cargo || userData.CARGO,
+            fecha: evaluacion.fecha_evaluacion || new Date().toISOString().split('T')[0],
+            accion: "Evaluación de Desempeño",
+            puntaje_total: evaluacion.total_puntos || 0,
+            porcentaje_calificacion: `${evaluacion.porcentaje_calificacion}%`
+          }))
+        
+        // Ordenar por fecha descendente
+        evaluacionesUsuario.sort((a: any, b: any) => 
+          new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
         )
-        const data: HistorialResponse = await response.json()
-        setHistorial(data.historial)
-        setTotalPages(data.total_pages)
+        
+        setHistorial(evaluacionesUsuario)
       } catch (error) {
-        console.error("Error fetching historial:", error)
+        console.error("Error al cargar el historial:", error)
       }
     }
 
     fetchHistorial()
-  }, [userData, currentPage])
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
+  }, [userData])
 
   if (!userData) {
     return <div>Cargando...</div>
@@ -95,7 +105,7 @@ export default function HistorialViewer() {
             ))}
           </TableBody>
         </Table>
-        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+        {/* Ya no necesitamos paginación ya que mostramos todos los resultados */}
       </CardContent>
     </Card>
   )

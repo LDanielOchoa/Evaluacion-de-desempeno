@@ -29,30 +29,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-interface Evaluation {
-  cedula: string
-  fecha_evaluacion: string
-  anio: number
-  cargo: string
-  compromiso: number
-  honestidad: number
-  respeto: number
-  sencillez: number
-  servicio: number
-  trabajo_equipo: number
-  conocimiento_trabajo: number
-  productividad: number
-  cumple_sistema_gestion: number
-  total_puntos: number
-  porcentaje_calificacion: number
-  acuerdos_mejora_desempeno_colaborador: string
-  acuerdos_mejora_desempeno_jefe: string
-  necesidades_desarrollo: string
-  aspectos_positivos: string
-  departamento: string
-  area_jefe_pertenencia: string
-  nombres_apellidos: string
-}
+import { Evaluation } from "./types"
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -100,19 +77,51 @@ export default function AdminPanel() {
   const fetchEvaluations = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch("https://evaluacion-de-desempeno.onrender.com/get_all_evaluations")
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      const data = await response.json()
-      if (data.success) {
-        setEvaluations(data.evaluations)
-        setFilteredEvaluations(data.evaluations)
-      } else {
-        console.error("Error fetching evaluations:", data.error)
-      }
+      // Cargar datos de data.json y usuarios_data.json
+      const [evaluacionesResponse, usuariosResponse] = await Promise.all([
+        fetch('/data.json'),
+        fetch('/usuarios_data.json')
+      ])
+      
+      const evaluaciones = await evaluacionesResponse.json()
+      const usuarios = await usuariosResponse.json()
+      
+      // Mapear los datos al formato requerido
+      const evaluacionesFormateadas = evaluaciones.map((evaluacion: any) => {
+        // Encontrar el usuario correspondiente para obtener datos adicionales
+        const usuario = usuarios.find((u: any) => u.CEDULA === evaluacion.cedula)
+        
+        return {
+          cedula: evaluacion.cedula.toString(),
+          fecha_evaluacion: evaluacion.fecha_evaluacion || new Date().toISOString().split('T')[0],
+          anio: evaluacion.anio || new Date(evaluacion.fecha_evaluacion).getFullYear() || 2024,
+          cargo: evaluacion.cargo || "",
+          compromiso_pasion_entrega: evaluacion.compromiso_pasion_entrega || 0,
+          compromiso: evaluacion.compromiso_pasion_entrega || 0,
+          honestidad: evaluacion.honestidad || 0,
+          respeto: evaluacion.respeto || 0,
+          sencillez: evaluacion.sencillez || 0,
+          servicio: evaluacion.servicio || 0,
+          trabajo_equipo: evaluacion.trabajo_equipo || 0,
+          conocimiento_trabajo: evaluacion.conocimiento_trabajo || 0,
+          productividad: evaluacion.productividad || 0,
+          cumple_sistema_gestion: evaluacion.cumple_sistema_gestion || 0,
+          total_puntos: evaluacion.total_puntos || 0,
+          porcentaje_calificacion: parseFloat(evaluacion.porcentaje_calificacion) || 0,
+          acuerdos_mejora_desempeno_colaborador: evaluacion.acuerdos_mejora_desempeno_colaborador || "",
+          acuerdos_mejora_desempeno_jefe: evaluacion.acuerdos_mejora_desempeno_jefe || "",
+          necesidades_desarrollo: evaluacion.necesidades_desarrollo || "",
+          aspectos_positivos: evaluacion.aspectos_positivos || "",
+          departamento: usuario?.["CENTRO DE COSTO"] || evaluacion.area_jefe_pertenencia || "",
+          area_jefe_pertenencia: evaluacion.area_jefe_pertenencia || usuario?.["CENTRO DE COSTO"] || "",
+          nombres_apellidos: evaluacion.nombres_apellidos || usuario?.NOMBRE || ""
+        }
+      })
+
+      setEvaluations(evaluacionesFormateadas)
+      setFilteredEvaluations(evaluacionesFormateadas)
     } catch (error) {
-      console.error("Error fetching evaluations:", error)
+      console.error("Error al cargar las evaluaciones:", error)
     } finally {
       setIsLoading(false)
     }

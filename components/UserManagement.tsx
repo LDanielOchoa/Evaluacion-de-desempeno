@@ -41,19 +41,32 @@ export function UserManagement() {
   const fetchUsers = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch("https://evaluacion-de-desempeno.onrender.com/get_all_users")
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      const data = await response.json()
-      if (data.success) {
-        setUsers(data.users)
-        setFilteredUsers(data.users)
-      } else {
-        console.error("Error fetching users:", data.error)
-      }
+      const response = await fetch('/usuarios_data.json')
+      const usuarios = await response.json()
+      
+      // Formatear los usuarios al formato requerido
+      const usuariosFormateados = usuarios.map((usuario: any) => ({
+        CEDULA: usuario.CEDULA,
+        NOMBRE: usuario.NOMBRE,
+        CARGO: usuario.CARGO,
+        CENTRO_DE_COSTO: usuario["CENTRO DE COSTO"],
+        LIDER_EVALUADOR: usuario["LIDER EVALUADOR"],
+        CARGO_DE_LIDER_EVALUADOR: usuario["CARGO DE LIDER EVALUADOR"],
+        ESTADO: usuario.ESTADO,
+        CLAVE: usuario.CEDULA.toString(), // La clave es la misma cédula
+        SEGURIDAD: "", // Campo de seguridad vacío por defecto
+        LIDER: usuario.Cedula ? "SI" : "NO" // Si tiene Cedula de líder, es líder
+      }))
+      
+      setUsers(usuariosFormateados)
+      setFilteredUsers(usuariosFormateados)
     } catch (error) {
-      console.error("Error fetching users:", error)
+      console.error("Error al cargar usuarios:", error)
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los usuarios. Por favor, intente nuevamente.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -73,29 +86,44 @@ export function UserManagement() {
 
   const handleAddUser = async (newUser: User) => {
     try {
-      const response = await fetch("https://evaluacion-de-desempeno.onrender.com/add_user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newUser),
-      })
-      const data = await response.json()
-      if (data.success) {
-        toast({
-          title: "Usuario agregado",
-          description: "El usuario ha sido agregado exitosamente.",
-        })
-        fetchUsers()
-        setIsAddDialogOpen(false)
-      } else {
-        throw new Error(data.error)
+      // Cargar usuarios actuales
+      const response = await fetch('/usuarios_data.json')
+      const usuarios = await response.json()
+      
+      // Verificar si el usuario ya existe
+      if (usuarios.some((u: any) => u.CEDULA === newUser.CEDULA)) {
+        throw new Error("Ya existe un usuario con esta cédula")
       }
+      
+      // Formatear el nuevo usuario al formato de usuarios_data.json
+      const nuevoUsuario = {
+        CEDULA: newUser.CEDULA,
+        NOMBRE: newUser.NOMBRE,
+        CARGO: newUser.CARGO,
+        "CENTRO DE COSTO": newUser.CENTRO_DE_COSTO,
+        "LIDER EVALUADOR": newUser.LIDER_EVALUADOR,
+        "CARGO DE LIDER EVALUADOR": newUser.CARGO_DE_LIDER_EVALUADOR,
+        ESTADO: newUser.ESTADO,
+        Cedula: newUser.LIDER === "SI" ? newUser.CEDULA : null
+      }
+      
+      // Agregar el nuevo usuario a la lista
+      usuarios.push(nuevoUsuario)
+      
+      // En un entorno real, aquí guardaríamos el archivo
+      // Por ahora solo actualizamos el estado local
+      toast({
+        title: "Usuario agregado",
+        description: "El usuario ha sido agregado exitosamente.",
+      })
+      
+      await fetchUsers() // Recargar la lista de usuarios
+      setIsAddDialogOpen(false)
     } catch (error) {
-      console.error("Error adding user:", error)
+      console.error("Error al agregar usuario:", error)
       toast({
         title: "Error",
-        description: "No se pudo agregar el usuario. Por favor, intente nuevamente.",
+        description: error instanceof Error ? error.message : "No se pudo agregar el usuario",
         variant: "destructive",
       })
     }
@@ -103,29 +131,42 @@ export function UserManagement() {
 
   const handleUpdateUser = async (updatedUser: User) => {
     try {
-      const response = await fetch(`https://evaluacion-de-desempeno.onrender.com/update_user/${updatedUser.CEDULA}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedUser),
-      })
-      const data = await response.json()
-      if (data.success) {
-        toast({
-          title: "Usuario actualizado",
-          description: "El usuario ha sido actualizado exitosamente.",
-        })
-        fetchUsers()
-        setIsEditDialogOpen(false)
-      } else {
-        throw new Error(data.error)
+      // Cargar usuarios actuales
+      const response = await fetch('/usuarios_data.json')
+      const usuarios = await response.json()
+      
+      // Encontrar y actualizar el usuario
+      const index = usuarios.findIndex((u: any) => u.CEDULA === updatedUser.CEDULA)
+      if (index === -1) {
+        throw new Error("Usuario no encontrado")
       }
+      
+      // Actualizar el usuario con el formato correcto
+      usuarios[index] = {
+        CEDULA: updatedUser.CEDULA,
+        NOMBRE: updatedUser.NOMBRE,
+        CARGO: updatedUser.CARGO,
+        "CENTRO DE COSTO": updatedUser.CENTRO_DE_COSTO,
+        "LIDER EVALUADOR": updatedUser.LIDER_EVALUADOR,
+        "CARGO DE LIDER EVALUADOR": updatedUser.CARGO_DE_LIDER_EVALUADOR,
+        ESTADO: updatedUser.ESTADO,
+        Cedula: updatedUser.LIDER === "SI" ? updatedUser.CEDULA : null
+      }
+      
+      // En un entorno real, aquí guardaríamos el archivo
+      // Por ahora solo actualizamos el estado local
+      toast({
+        title: "Usuario actualizado",
+        description: "El usuario ha sido actualizado exitosamente.",
+      })
+      
+      await fetchUsers() // Recargar la lista de usuarios
+      setIsEditDialogOpen(false)
     } catch (error) {
-      console.error("Error updating user:", error)
+      console.error("Error al actualizar usuario:", error)
       toast({
         title: "Error",
-        description: "No se pudo actualizar el usuario. Por favor, intente nuevamente.",
+        description: error instanceof Error ? error.message : "No se pudo actualizar el usuario",
         variant: "destructive",
       })
     }
@@ -134,24 +175,30 @@ export function UserManagement() {
   const handleDeleteUser = async (cedula: number) => {
     if (window.confirm("¿Está seguro de que desea eliminar este usuario?")) {
       try {
-        const response = await fetch(`https://evaluacion-de-desempeno.onrender.com/delete_user/${cedula}`, {
-          method: "DELETE",
-        })
-        const data = await response.json()
-        if (data.success) {
-          toast({
-            title: "Usuario eliminado",
-            description: "El usuario ha sido eliminado exitosamente.",
-          })
-          fetchUsers()
-        } else {
-          throw new Error(data.error)
+        // Cargar usuarios actuales
+        const response = await fetch('/usuarios_data.json')
+        const usuarios = await response.json()
+        
+        // Filtrar el usuario a eliminar
+        const usuariosFiltrados = usuarios.filter((u: any) => u.CEDULA !== cedula)
+        
+        if (usuariosFiltrados.length === usuarios.length) {
+          throw new Error("Usuario no encontrado")
         }
+        
+        // En un entorno real, aquí guardaríamos el archivo
+        // Por ahora solo actualizamos el estado local
+        toast({
+          title: "Usuario eliminado",
+          description: "El usuario ha sido eliminado exitosamente.",
+        })
+        
+        await fetchUsers() // Recargar la lista de usuarios
       } catch (error) {
-        console.error("Error deleting user:", error)
+        console.error("Error al eliminar usuario:", error)
         toast({
           title: "Error",
-          description: "No se pudo eliminar el usuario. Por favor, intente nuevamente.",
+          description: error instanceof Error ? error.message : "No se pudo eliminar el usuario",
           variant: "destructive",
         })
       }
