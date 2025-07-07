@@ -20,6 +20,8 @@ import {
   ChevronDown,
   ChevronUp,
   Calendar,
+  Users,
+  ArrowRight,
 } from "lucide-react"
 import confetti from "canvas-confetti"
 import { useUser } from "../contexts/userContexts"
@@ -64,6 +66,8 @@ type EvaluationHistory = {
   fecha_evaluacion: string
   anio: number
   cargo: string
+  nombres_apellidos: string
+  cedula: number
   compromiso: number
   honestidad: number
   respeto: number
@@ -91,6 +95,7 @@ const loadEvaluationHistory = async (userCedula: number): Promise<EvaluationHist
     const usuarios = await fetch('/usuarios_data.json').then(res => res.json())
     
     // Obtener lista de subordinados del líder actual (personas que tienen a este usuario como líder)
+    // Buscar usuarios que tengan como "Cedula" (cédula del líder) la cédula del usuario actual
     const subordinados = usuarios.filter((usuario: any) => usuario.Cedula === userCedula)
     const cedulasSubordinados = subordinados.map((sub: any) => sub.CEDULA)
     
@@ -104,6 +109,8 @@ const loadEvaluationHistory = async (userCedula: number): Promise<EvaluationHist
       fecha_evaluacion: new Date().toISOString().split('T')[0], // Fecha actual como ejemplo
       anio: 2024,
       cargo: evaluacion.cargo,
+      nombres_apellidos: evaluacion.nombres_apellidos,
+      cedula: evaluacion.cedula,
       compromiso: evaluacion.compromiso_pasion_entrega,
       honestidad: evaluacion.honestidad,
       respeto: evaluacion.respeto,
@@ -224,6 +231,55 @@ export default function FormularioContent() {
   })
   const [evaluationHistory, setEvaluationHistory] = useState<EvaluationHistory[]>([])
   const [isClient, setIsClient] = useState(false)
+
+  // Función para cargar datos de una persona específica desde las evaluaciones
+  const loadPersonData = async (evaluation: EvaluationHistory) => {
+    try {
+      // Cargar datos del empleado desde usuarios_data.json
+      const response = await fetch('/usuarios_data.json')
+      const usuarios = await response.json()
+      
+      // Buscar el empleado por su cédula
+      const empleado = usuarios.find((usuario: any) => usuario.CEDULA === evaluation.cedula)
+      
+      if (empleado) {
+        // Actualizar los datos del formulario con la información del empleado seleccionado
+        setFormData(prev => ({
+          ...prev,
+          datos: {
+            nombres: empleado.NOMBRE || "",
+            cedula: empleado.CEDULA?.toString() || "",
+            cargo: empleado.CARGO || "",
+            jefe: empleado["LIDER EVALUADOR"] || "",
+            cargoJefe: empleado["CARGO DE LIDER EVALUADOR"] || "",
+            area: empleado["CENTRO DE COSTO"] || "",
+          },
+          valores: {
+            compromiso: evaluation.compromiso || 0,
+            honestidad: evaluation.honestidad || 0,
+            respeto: evaluation.respeto || 0,
+            sencillez: evaluation.sencillez || 0,
+            servicio: evaluation.servicio || 0,
+            trabajo_equipo: evaluation.trabajo_equipo || 0,
+            conocimiento_trabajo: evaluation.conocimiento_trabajo || 0,
+            productividad: evaluation.productividad || 0,
+            cumple_sistema_gestion: evaluation.cumple_sistema_gestion || 0,
+          },
+          acuerdos: {
+            colaborador_acuerdos: evaluation.acuerdos_mejora_desempeno_colaborador || "",
+            jefe_acuerdos: evaluation.acuerdos_mejora_desempeno_jefe || "",
+            desarrollo_necesidades: evaluation.necesidades_desarrollo || "",
+            aspectos_positivos: evaluation.aspectos_positivos || "",
+          }
+        }))
+        
+        // Navegar automáticamente a la sección de datos personales
+        setCurrentSection(1)
+      }
+    } catch (error) {
+      console.error('Error al cargar datos de la persona:', error)
+    }
+  }
 
   // Pre-llenar datos del usuario si están disponibles
   useEffect(() => {
@@ -448,7 +504,10 @@ export default function FormularioContent() {
                           )}
                         </Button>
                       </div>
-                      <p className="text-green-700 mt-2">Cargo: {evaluation.cargo}</p>
+                      <p className="text-green-700 mt-2">
+                        <strong>Empleado:</strong> {evaluation.nombres_apellidos}
+                      </p>
+                      <p className="text-green-600 text-sm">Cargo: {evaluation.cargo}</p>
                       <p className="text-sm font-medium text-green-800 mt-2">
                         Calificación total: {evaluation.porcentaje_calificacion}
                       </p>
@@ -503,6 +562,18 @@ export default function FormularioContent() {
                           <p className="text-sm text-green-700">
                             <strong>Aspectos positivos:</strong> {evaluation.aspectos_positivos}
                           </p>
+                          
+                          {/* Botón para seleccionar esta evaluación */}
+                          <div className="mt-4 pt-4 border-t border-green-200">
+                            <Button
+                              onClick={() => loadPersonData(evaluation)}
+                              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+                            >
+                              <Users className="w-4 h-4" />
+                              Seleccionar esta persona para evaluar
+                              <ArrowRight className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </motion.div>
                     )}
@@ -627,6 +698,23 @@ export default function FormularioContent() {
                     <Sparkles className="w-6 h-6" />
                     Datos Personales
                   </h2>
+                  
+                  {/* Mensaje informativo cuando se selecciona una persona */}
+                  {formData.datos.nombres && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-6 p-4 bg-green-100 border border-green-300 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2 text-green-800">
+                        <Users className="w-5 h-5" />
+                        <span className="font-medium">
+                          Evaluando a: {formData.datos.nombres}
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+                  
                   <div className="space-y-4">
                     <TextInput
                       id="nombres"
