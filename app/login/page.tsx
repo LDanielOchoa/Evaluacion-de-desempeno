@@ -15,19 +15,40 @@ import { ForgotPasswordModal } from "../../components/Security-Login/forgot-pass
 import { NoAccessModal } from "@/components/NotAccessModal"
 import { AdminChoiceModal } from "@/components/AdminChoiceModal"
 
-// Datos de ejemplo para visualización
-const mockUserData = {
-  CEDULA: 1000896882,
-  NOMBRE: "RAMIREZ PALACIO SHARITHA",
-  CARGO: "AUXILIAR DE DESARROLLO",
-  CENTRO_DE_COSTO: "",
-  LIDER_EVALUADOR: "SANCHEZ MUÑOZ WANDA VANESSA",
-  CARGO_DE_LIDER_EVALUADOR: "PROFESIONAL DE DESARROLLO",
-  ESTADO: "ACTIVO",
-  ANO_INGRESO: 0,
-  MES_INGRESO: "0",
-  ANOS: 0,
-  ANTIGUEDAD: ""
+// Función para obtener los líderes evaluadores desde el archivo JSON
+const getLideresEvaluadores = async () => {
+  try {
+    const response = await fetch('/usuarios_data.json')
+    const usuarios = await response.json()
+    
+    // Extraer todos los líderes evaluadores únicos
+    const lideresMap = new Map()
+    
+    usuarios.forEach((usuario: any) => {
+      if (usuario.Cedula && usuario["LIDER EVALUADOR"]) {
+        // La cédula del líder está en el campo "Cedula"
+        const cedulaLider = usuario.Cedula
+        const nombreLider = usuario["LIDER EVALUADOR"]
+        const cargoLider = usuario["CARGO DE LIDER EVALUADOR"]
+        
+        if (!lideresMap.has(cedulaLider)) {
+          lideresMap.set(cedulaLider, {
+            CEDULA: cedulaLider,
+            NOMBRE: nombreLider,
+            CARGO: cargoLider,
+            ESTADO: "ACTIVO",
+            // Buscar información adicional del líder si existe como empleado
+            ...usuarios.find((u: any) => u.CEDULA === cedulaLider)
+          })
+        }
+      }
+    })
+    
+    return Array.from(lideresMap.values())
+  } catch (error) {
+    console.error('Error al cargar líderes evaluadores:', error)
+    return []
+  }
 }
 
 export default function LoginPage() {
@@ -61,34 +82,65 @@ export default function LoginPage() {
     setErrorMessage("")
 
     if (!username || !password) {
-      setErrorMessage("Por favor ingrese su usuario y contraseña")
+      setErrorMessage("Por favor ingrese su cédula en ambos campos")
+      return
+    }
+
+    // Validar que usuario y contraseña sean la misma cédula
+    if (username !== password) {
+      setErrorMessage("El usuario y la contraseña deben ser la misma cédula")
       return
     }
 
     setIsLoading(true)
     
-    // Simular delay de carga
-    setTimeout(() => {
-      try {
-        // Usar datos de ejemplo para cualquier usuario/contraseña
-        const userData = {
-          ...mockUserData,
-          CEDULA: parseInt(username) || mockUserData.CEDULA
-        }
-
-        setUserData(userData)
-        toast.success(`Bienvenido, ${userData.NOMBRE}`)
-        
-        // Redirigir directamente al formulario
-        router.push("/formulario")
-        
-      } catch (error: any) {
-        console.error("Error:", error)
-        setErrorMessage("Error al procesar el login")
-      } finally {
+    try {
+      const lideresEvaluadores = await getLideresEvaluadores()
+      const cedula = parseInt(username)
+      
+      // Buscar si la cédula corresponde a un líder evaluador
+      const lider = lideresEvaluadores.find(l => l.CEDULA === cedula)
+      
+      if (!lider) {
+        setErrorMessage("Acceso denegado. Solo los líderes evaluadores pueden ingresar al sistema.")
         setIsLoading(false)
+        return
       }
-    }, 1000)
+
+      // Obtener información adicional del líder desde el archivo completo
+      const response = await fetch('/usuarios_data.json')
+      const todosUsuarios = await response.json()
+      
+      // Buscar la información completa del líder
+      const infoCompleta = todosUsuarios.find((u: any) => u.CEDULA === cedula)
+      
+      const userData = {
+        CEDULA: lider.CEDULA,
+        NOMBRE: lider.NOMBRE,
+        CARGO: lider.CARGO,
+        CENTRO_DE_COSTO: infoCompleta?.["CENTRO DE COSTO"] || "",
+        LIDER_EVALUADOR: infoCompleta?.["LIDER EVALUADOR"] || "",
+        CARGO_DE_LIDER_EVALUADOR: infoCompleta?.["CARGO DE LIDER EVALUADOR"] || "",
+        ESTADO: "ACTIVO",
+        ANO_INGRESO: infoCompleta?.["Año ingreso"] || 0,
+        MES_INGRESO: infoCompleta?.["mes ingreso"] || "",
+        ANOS: infoCompleta?.["Años"] || 0,
+        ANTIGUEDAD: infoCompleta?.["Antiguedad"] || "",
+        ES_LIDER_EVALUADOR: true
+      }
+
+      setUserData(userData)
+      toast.success(`Bienvenido, ${userData.NOMBRE}`)
+      
+      // Redirigir al formulario o admin según corresponda
+      router.push("/formulario")
+      
+    } catch (error: any) {
+      console.error("Error:", error)
+      setErrorMessage("Error al validar las credenciales. Intente nuevamente.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleAdminChoice = (choice: "admin" | "default") => {
@@ -163,7 +215,7 @@ export default function LoginPage() {
                 transition={{ delay: 0.6, duration: 0.5 }}
                 className="text-black text-lg md:text-xl relative z-10"
               >
-                Ingrese su usuario y contraseña para comenzar
+                Ingrese su cédula para acceder (solo líderes evaluadores)
               </motion.p>
             </motion.div>
             <ErrorMessage message={errorMessage} />
@@ -179,7 +231,7 @@ export default function LoginPage() {
                   <Input
                     type="text"
                     name="username"
-                    placeholder="Ingrese su usuario"
+                    placeholder="Ingrese su cédula"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="h-12 md:h-14 pl-12 rounded-2xl border-2 border-green-200 bg-white/60 backdrop-blur-sm focus:bg-white/80 focus:border-green-400 transition-all duration-300 relative z-10"
@@ -195,7 +247,7 @@ export default function LoginPage() {
                   <Input
                     type="password"
                     name="password"
-                    placeholder="Ingrese su contraseña"
+                    placeholder="Confirme su cédula"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="h-12 md:h-14 pl-12 rounded-2xl border-2 border-green-200 bg-white/60 backdrop-blur-sm focus:bg-white/80 focus:border-green-400 transition-all duration-300 relative z-10"
@@ -214,7 +266,7 @@ export default function LoginPage() {
                   className="text-sm text-green-600 hover:text-green-700 transition-colors flex items-center"
                   whileHover={{ x: 5 }}
                 >
-                  ¿Olvidaste tu contraseña?
+                  ¿Problemas para ingresar?
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </motion.button>
               </motion.div>

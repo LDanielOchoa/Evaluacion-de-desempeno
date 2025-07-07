@@ -81,29 +81,50 @@ type EvaluationHistory = {
   aspectos_positivos: string
 }
 
-// Datos de ejemplo para el historial
-const mockEvaluationHistory: EvaluationHistory[] = [
-  {
-    fecha_evaluacion: "2023-12-15",
-    anio: 2024,
-    cargo: "AUXILIAR DE DESARROLLO",
-    compromiso: 4,
-    honestidad: 4,
-    respeto: 4,
-    sencillez: 4,
-    servicio: 4,
-    trabajo_equipo: 4,
-    conocimiento_trabajo: 4,
-    productividad: 3,
-    cumple_sistema_gestion: 4,
-    total_puntos: 35,
-    porcentaje_calificacion: "97.22%",
-    acuerdos_mejora_desempeno_colaborador: "Es importante trabajar en mejorar la productividad aumentando su habilidad en identificar tareas urgentes e importantes, adicional, mejorar atención al detalle en la entrega de documentos al CAD Digital",
-    acuerdos_mejora_desempeno_jefe: "Aumentar comunicación y trasmisión de procesos y cambios que se implementan en la gestión de desarrollo organizacional. ",
-    necesidades_desarrollo: "IA Optimizar proceso de gestión documental. ",
-    aspectos_positivos: "Considero que es una personal empatía y nivel de servicio para sus compañeros y colaboradores en general lo que aporta un valor agregado para la Compañía."
-  },
-]
+// Función para cargar el historial de evaluaciones desde el archivo JSON
+const loadEvaluationHistory = async (userCedula: number): Promise<EvaluationHistory[]> => {
+  try {
+    const response = await fetch('/data.json')
+    const evaluaciones = await response.json()
+    
+    // Buscar evaluaciones de los subordinados del líder actual
+    const usuarios = await fetch('/usuarios_data.json').then(res => res.json())
+    
+    // Obtener lista de subordinados del líder actual (personas que tienen a este usuario como líder)
+    const subordinados = usuarios.filter((usuario: any) => usuario.Cedula === userCedula)
+    const cedulasSubordinados = subordinados.map((sub: any) => sub.CEDULA)
+    
+    // Filtrar evaluaciones de los subordinados del líder
+    const evaluacionesRelevantes = evaluaciones.filter((evaluacion: any) => 
+      cedulasSubordinados.includes(evaluacion.cedula)
+    )
+    
+    // Convertir al formato esperado
+    return evaluacionesRelevantes.map((evaluacion: any) => ({
+      fecha_evaluacion: new Date().toISOString().split('T')[0], // Fecha actual como ejemplo
+      anio: 2024,
+      cargo: evaluacion.cargo,
+      compromiso: evaluacion.compromiso_pasion_entrega,
+      honestidad: evaluacion.honestidad,
+      respeto: evaluacion.respeto,
+      sencillez: evaluacion.sencillez,
+      servicio: evaluacion.servicio,
+      trabajo_equipo: evaluacion.trabajo_equipo,
+      conocimiento_trabajo: evaluacion.conocimiento_trabajo,
+      productividad: evaluacion.productividad,
+      cumple_sistema_gestion: evaluacion.cumple_sistema_gestion,
+      total_puntos: evaluacion.total_puntos,
+      porcentaje_calificacion: `${evaluacion.porcentaje_calificacion}%`,
+      acuerdos_mejora_desempeno_colaborador: evaluacion.acuerdos_mejora_desempeno_colaborador,
+      acuerdos_mejora_desempeno_jefe: evaluacion.acuerdos_mejora_desempeno_jefe,
+      necesidades_desarrollo: evaluacion.necesidades_desarrollo,
+      aspectos_positivos: evaluacion.aspectos_positivos
+    }))
+  } catch (error) {
+    console.error('Error al cargar historial de evaluaciones:', error)
+    return []
+  }
+}
 
 const sections = ["historial", "datos", "valores", "acuerdos"]
 
@@ -226,11 +247,16 @@ export default function FormularioContent() {
   }, [])
 
   useEffect(() => {
-    if (isClient) {
-      // Usar datos de ejemplo en lugar de hacer llamada al backend
-      setEvaluationHistory(mockEvaluationHistory)
+    if (isClient && userData?.CEDULA) {
+      // Cargar historial de evaluaciones real
+      loadEvaluationHistory(userData.CEDULA)
+        .then(setEvaluationHistory)
+        .catch(error => {
+          console.error('Error al cargar historial:', error)
+          setEvaluationHistory([])
+        })
     }
-  }, [isClient])
+  }, [isClient, userData?.CEDULA])
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -238,7 +264,6 @@ export default function FormularioContent() {
       if (currentSection === sections.length - 1) {
         const requiredFields = ["nombres", "cedula", "cargo", "jefe", "cargoJefe", "area"]
         const missingFields = requiredFields.filter((field) => !formData.datos[field as keyof typeof formData.datos])
-
         if (missingFields.length > 0) {
           alert(`Por favor, complete los siguientes campos obligatorios: ${missingFields.join(", ")}`)
           return
@@ -246,10 +271,40 @@ export default function FormularioContent() {
 
         setIsLoading(true)
         
-        // Simular envío exitoso sin backend
-        setTimeout(() => {
+        try {
+          // Preparar datos para guardar
+          const evaluacionData = {
+            nombres_apellidos: formData.datos.nombres,
+            cedula: parseInt(formData.datos.cedula),
+            cargo: formData.datos.cargo,
+            nombre_jefe_inmediato: formData.datos.jefe,
+            area_jefe_pertenencia: formData.datos.area,
+            compromiso_pasion_entrega: formData.valores.compromiso,
+            honestidad: formData.valores.honestidad,
+            respeto: formData.valores.respeto,
+            sencillez: formData.valores.sencillez,
+            servicio: formData.valores.servicio,
+            trabajo_equipo: formData.valores.trabajo_equipo,
+            conocimiento_trabajo: formData.valores.conocimiento_trabajo,
+            productividad: formData.valores.productividad,
+            cumple_sistema_gestion: formData.valores.cumple_sistema_gestion,
+            total_puntos: Object.values(formData.valores).reduce((a, b) => a + b, 0),
+            porcentaje_calificacion: (Object.values(formData.valores).reduce((a, b) => a + b, 0) / 36 * 100).toFixed(2),
+            acuerdos_mejora_desempeno_colaborador: formData.acuerdos.colaborador_acuerdos,
+            acuerdos_mejora_desempeno_jefe: formData.acuerdos.jefe_acuerdos,
+            necesidades_desarrollo: formData.acuerdos.desarrollo_necesidades,
+            aspectos_positivos: formData.acuerdos.aspectos_positivos,
+            cargo_jefe_inmediato: formData.datos.cargoJefe,
+            fecha_evaluacion: new Date().toISOString().split('T')[0]
+          }
+
+          // Aquí normalmente se enviarían los datos al backend
+          // Por ahora, mostrar éxito y guardar en localStorage como respaldo
+          localStorage.setItem(`evaluacion_${evaluacionData.cedula}`, JSON.stringify(evaluacionData))
+          
           setShowSuccess(true)
-          // Calcular rating directamente aquí
+          
+          // Calcular rating para confetti
           const values = Object.values(formData.valores) as number[]
           const averageRating = values.reduce((a, b) => a + b, 0) / values.length
           
@@ -260,8 +315,15 @@ export default function FormularioContent() {
               origin: { y: 0.6 },
             })
           }
+          
+          console.log('Evaluación guardada:', evaluacionData)
+          
+        } catch (error) {
+          console.error('Error al guardar evaluación:', error)
+          alert('Error al guardar la evaluación. Por favor, intente nuevamente.')
+        } finally {
           setIsLoading(false)
-        }, 2000)
+        }
       } else {
         setCurrentSection((prev) => prev + 1)
       }
@@ -324,28 +386,11 @@ export default function FormularioContent() {
   )
   
   const HistorySection = React.memo(() => {
-    const [currentPage, setCurrentPage] = useState(0)
     const [expandedCard, setExpandedCard] = useState<number | null>(null)
-    const evaluationsPerPage = 2
-
-    const totalPages = Math.ceil(evaluationHistory.length / evaluationsPerPage)
-    const paginatedEvaluations = useMemo(
-      () => evaluationHistory.slice(currentPage * evaluationsPerPage, (currentPage + 1) * evaluationsPerPage),
-      [evaluationHistory, currentPage, evaluationsPerPage],
-    )
   
     if (!isClient) {
       return null
     }
-    const nextPage = useCallback(() => {
-      setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
-      setExpandedCard(null)
-    }, [totalPages])
-
-    const prevPage = useCallback(() => {
-      setCurrentPage((prev) => Math.max(prev - 1, 0))
-      setExpandedCard(null)
-    }, [])
 
     const toggleExpand = useCallback((index: number) => {
       setExpandedCard((prev) => (prev === index ? null : index))
@@ -367,7 +412,7 @@ export default function FormularioContent() {
         ) : (
           <>
             <div className="space-y-6">
-              {paginatedEvaluations.map((evaluation, index) => (
+              {evaluationHistory.map((evaluation, index) => (
                 <motion.div
                   key={index}
                   className="bg-white/50 rounded-xl shadow-md overflow-hidden"
@@ -464,25 +509,6 @@ export default function FormularioContent() {
                   </div>
                 </motion.div>
               ))}
-            </div>
-            <div className="flex justify-between mt-6">
-              <Button
-                onClick={prevPage}
-                disabled={currentPage === 0}
-                className="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors duration-200 disabled:opacity-50"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
-              <span className="text-green-800">
-                Página {currentPage + 1} de {totalPages}
-              </span>
-              <Button
-                onClick={nextPage}
-                disabled={currentPage === totalPages - 1}
-                className="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors duration-200 disabled:opacity-50"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </Button>
             </div>
           </>
         )}
